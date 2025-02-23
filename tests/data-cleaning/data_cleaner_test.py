@@ -1,5 +1,5 @@
 import pytest
-from ....data import DataCleaner
+from data import DataCleaner
 
 
 def test_remove_text_1():

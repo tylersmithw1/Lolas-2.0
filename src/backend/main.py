@@ -9,6 +9,7 @@ import os
 import pandas as pd
 
 
+
 class GrocerySearch(BaseModel):
     search_string: str
 
@@ -26,7 +27,7 @@ origins = [
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=["http://localhost:3000", "http://localhost:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"]
@@ -41,5 +42,19 @@ async def create_ranking(query: GrocerySearch, chat_service: chatService = Depen
     except Exception as e:
         print(e)
         raise HTTPException(status_code=400, detail=str(e))
+
+@app.post("/product-info")
+async def get_product_info(query: GrocerySearch):
+    try:
+        # Filter DataFrame based on the search string
+        filtered_df = df[df["product"].str.contains(query.search_string, case=False, na=False)]
+        
+        # Convert filtered DataFrame to a list of dictionaries
+        product_list = filtered_df.to_dict(orient="records")
+
+        return {"products": product_list}
+    except Exception as e:
+        return {"error": str(e)}
+
 
 

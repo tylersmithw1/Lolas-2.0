@@ -1,35 +1,73 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState } from "react";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [search, setSearch] = useState("");
+  const [products, setProducts] = useState([]);
+
+  // Function to fetch product data when Search button is clicked
+  const fetchProducts = async () => {
+    if (!search.trim()) {
+      alert("Please enter a search term.");
+      return;
+    }
+
+    try {
+      const response = await fetch("http://127.0.0.1:8000/product-info", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ search_string: search }),
+      });
+
+      if (!response.ok) throw new Error("Failed to fetch");
+
+      const data = await response.json();
+      setProducts(data.products);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    }
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <div style={{ padding: "20px", textAlign: "center" }}>
+      <h1>Search for Product</h1>
+      <input
+        type="text"
+        placeholder="Type to search..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        style={{
+          width: "80%",
+          padding: "10px",
+          fontSize: "16px",
+          marginBottom: "10px",
+        }}
+      />
+      <button
+        onClick={fetchProducts}
+        style={{
+          marginLeft: "10px",
+          padding: "10px 15px",
+          fontSize: "16px",
+          cursor: "pointer",
+        }}
+      >
+        Search
+      </button>
+
+      {/* Display product results */}
+      <div style={{ marginTop: "20px" }}>
+        {products.length > 0 ? (
+          products.map((product, index) => (
+            <div key={index} style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>
+              {product.product}
+            </div>
+          ))
+        ) : (
+          <p>No results found.</p>
+        )}
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    </div>
+  );
 }
 
-export default App
+export default App;

@@ -6,7 +6,11 @@ from typing import List
 from service import chatService
 from fastapi import FastAPI, HTTPException, Depends
 import os
+from fastapi.responses import JSONResponse
 import pandas as pd
+import json
+import re
+
 
 
 class GrocerySearch(BaseModel):
@@ -57,3 +61,33 @@ async def get_product_info(query: GrocerySearch):
         return {"products": product_list}
     except Exception as e:
         return {"error": str(e)}
+
+
+
+@app.post("/grocery-products")
+async def create_ranking(query: GrocerySearch, chat_service: chatService = Depends()):
+    try:
+        response = chat_service.getChatResponse(query.search_string)
+        print(f"Raw Chat Response: {response}")  # Debugging output
+
+        # Extract JSON part using regex
+        match = re.search(r"<json>\s*(.*?)\s*</json>", response, re.DOTALL)
+        if match:
+            json_string = match.group(1)  # Extract only the JSON content
+        else:
+            raise ValueError("Chat response does not contain valid JSON.")
+
+        # Convert extracted JSON string to a Python object
+        json_data = json.loads(json_string)
+
+        return JSONResponse(content={"products": json_data})
+
+    except Exception as e:
+        print(f"Error: {e}")
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+
+
+
+

@@ -1,5 +1,5 @@
 import pandas as pd
-import re 
+import re
 
 
 class DataCleaner:
@@ -54,7 +54,7 @@ class DataCleaner:
         """
         self.df = self.df.drop(columns=columns)
 
-    def save_data(self, output_path):
+    def save_data(self, output_path="export.xlsx"):
         """
         Saves the cleaned data to a new Excel file.
         :param output_path: Path where the cleaned data should be saved.
@@ -108,8 +108,11 @@ class DataCleaner:
         # Remove rows with any blank (NaN) values
         self.df = self.df.dropna()
 
-        self.df = self.df.groupby(column, group_keys=False).apply(
-            lambda x: x.iloc[:num]).reset_index(drop=True)
+        self.df = (
+            self.df.groupby(column, group_keys=False)
+            .apply(lambda x: x.iloc[:num])
+            .reset_index(drop=True)
+        )
 
     def count_unique_entries(self, column):
         """
@@ -132,12 +135,12 @@ class DataCleaner:
         If it does, convert it to grams (multiply by 1000) and remove 'm'.
         """
         # Remove 'g' from the column first
-        self.df[column] = self.df[column].str.replace('g', '', regex=False)
+        self.df[column] = self.df[column].str.replace("g", "", regex=False)
         self.strip_spaces(column)
 
         # Convert entries with 'm' to grams by / by 1000 and remove 'm'
         self.df[column] = self.df[column].apply(
-            lambda x: float(x.replace('m', '')) / 1000 if 'm' in str(x) else x
+            lambda x: float(x.replace("m", "")) / 1000 if "m" in str(x) else x
         )
 
         self.to_float(column)
@@ -148,13 +151,13 @@ class DataCleaner:
         If it does, convert it to grams (multiply by 1000) and remove 'm'.
         """
         units = {
-            ("mg", "g"): 1/1000,
+            ("mg", "g"): 1 / 1000,
             # ("ml", "l"): 1/1000,
             # ("l", "ml"): 1000,
             ("fl oz", "ml"): 29.5735,
             ("cup", "ml"): 240,
             ("cups", "ml"): 240,
-            ("ml", "ml"): 1
+            ("ml", "ml"): 1,
         }
 
         # if (start_unit.lower(), end_unit.lower()) not in units:
@@ -170,7 +173,11 @@ class DataCleaner:
         for key, value in units.items():
             print(str(key[0]) + ": " + str(value))
             self.df[column] = self.df[column].apply(
-                lambda x: float(x.replace(key[0], '')) * value if key[0].lower() == str(x.lower())[-(len(key[0])):] else x
+                lambda x: (
+                    float(x.replace(key[0], "")) * value
+                    if key[0].lower() == str(x.lower())[-(len(key[0])) :]
+                    else x
+                )
             )
             # self.df[column] = self.df[column].apply(
             #     lambda x: float(x.replace(key[0], '')) * value if str(x).endswith(key[0]) else x
@@ -181,15 +188,20 @@ class DataCleaner:
     def to_list(self, column):
         res = self.df[column].tolist()
         return res
-    
+
     def convert_oz_to_ml(self, column):
         """
         Converts values in a specified column from ounces (oz/fl oz) to milliliters (mL).
         :param column: The column name to process.
         """
+
         def convert(value):
             if isinstance(value, str):
-                match = re.search(r'([\d]+(?:\.\d+)?)\s*(?:fl oz|oz|ounces|fl. oz)', value, re.IGNORECASE)
+                match = re.search(
+                    r"([\d]+(?:\.\d+)?)\s*(?:fl oz|oz|ounces|fl. oz)",
+                    value,
+                    re.IGNORECASE,
+                )
                 if match:
                     try:
                         ounces = float(match.group(1))
@@ -200,12 +212,12 @@ class DataCleaner:
             return value  # Return original value if no conversion is needed
 
         self.df[column] = self.df[column].apply(convert)
-    
+
     def extract_bracketed_value(self, column):
 
         def extract(value):
             if isinstance(value, str):
-                match = re.search(r'\(([^)]+)\)', value)  # Find text inside parentheses
+                match = re.search(r"\(([^)]+)\)", value)  # Find text inside parentheses
                 if match:
                     extracted = match.group(1).strip()  # Extract and strip whitespace
                     if extracted.lower() != "s":  # Ensure it's not just "s"
@@ -215,8 +227,6 @@ class DataCleaner:
         self.df[column] = self.df[column].apply(extract)
 
     def convert_package_based_size(self, column):
-    
-
         # Define mappings of known units to approximate values
         unit_mapping = {
             "can": "355ml",
@@ -225,23 +235,28 @@ class DataCleaner:
             "container": "300g",
             "bagel": "100g",
             "ea": "100g",
-            "roll":"68g",
+            "roll": "68g",
             "slice": "30g",
             "biscuit": "58g",
             "breadstick": "30g",
             "apple": "150g",
             "k-cup": "10g",
-            "pan fried slice": "40g", 
+            "pan fried slice": "40g",
             "stick": "65g",
-
         }
 
         def convert(value):
             if isinstance(value, str):
-                match = re.search(r'(\d*\.?\d*)\s*([\w\s-]+)', value)  # Extract number and unit
+                match = re.search(
+                    r"(\d*\.?\d*)\s*([\w\s-]+)", value
+                )  # Extract number and unit
                 if match:
-                    quantity = float(match.group(1)) if match.group(1) else 1  # Default to 1 if missing
-                    unit = match.group(2).strip().lower()  # Extract unit and normalize case
+                    quantity = (
+                        float(match.group(1)) if match.group(1) else 1
+                    )  # Default to 1 if missing
+                    unit = (
+                        match.group(2).strip().lower()
+                    )  # Extract unit and normalize case
 
                     # Find corresponding unit in mapping
                     for key in unit_mapping:
@@ -249,11 +264,15 @@ class DataCleaner:
                             base_value = unit_mapping[key]
 
                             # Extract numeric part from base value (e.g., "500ml" -> 500)
-                            base_quantity, base_unit = re.match(r'(\d+)([a-zA-Z]+)', base_value).groups()
+                            base_quantity, base_unit = re.match(
+                                r"(\d+)([a-zA-Z]+)", base_value
+                            ).groups()
                             base_quantity = float(base_quantity)
 
                             # Scale by quantity if greater than 1
-                            converted_value = f"{int(quantity * base_quantity)}{base_unit}"
+                            converted_value = (
+                                f"{int(quantity * base_quantity)}{base_unit}"
+                            )
                             return converted_value
 
             return value  # Return original value if no match found
@@ -262,18 +281,22 @@ class DataCleaner:
 
     def convert_cups_to_ml(self, column):
         def convert(value):
-            match = re.search(r'([\d\.]+)\s*(?:cup|cups)', str(value), re.IGNORECASE)
+            match = re.search(r"([\d\.]+)\s*(?:cup|cups)", str(value), re.IGNORECASE)
             if match:
                 cups = float(match.group(1))
                 return f"{cups * 240}ml"
             return value  # Return original value if no match
 
         self.df[column] = self.df[column].apply(convert)
-    
+
     def convert_tbsp_to_ml(self, column):
-    
+
         def convert(value):
-            match = re.search(r'([\d\.]+)\s*(?:tbsp|tablespoon|tablespoons|tsp)', str(value), re.IGNORECASE)
+            match = re.search(
+                r"([\d\.]+)\s*(?:tbsp|tablespoon|tablespoons|tsp)",
+                str(value),
+                re.IGNORECASE,
+            )
             if match:
                 tbsp = float(match.group(1))
                 return f"{tbsp * 15}ml"
@@ -281,64 +304,90 @@ class DataCleaner:
 
         self.df[column] = self.df[column].apply(convert)
 
-
     def standardize_column(self, column_name):
         """
-        Creates a new column standardizing a specified numerical column to a per-100g or per-100ml basis.
-    
-        The new column will be named '<column_name> per 100g' or '<column_name> per 100ml'.
+            Creates a new column standardizing a specified numerical column to a per-100g or per-100ml basis.
 
-    :param column_name: The column to standardize.
+            The new column will be named '<column_name> per 100g' or '<column_name> per 100ml'.
+
+        :param column_name: The column to standardize.
         """
-        if 'servingsize' not in self.df.columns:
+        if "servingsize" not in self.df.columns:
             raise ValueError("The DataFrame must contain a 'servingsize' column.")
-    
+
         if column_name not in self.df.columns:
             raise ValueError(f"Column '{column_name}' not found in DataFrame.")
-    
+
         # Extract only numeric values from servingsize using regex
-        self.df['servingsize_numeric'] = self.df['servingsize'].astype(str).apply(lambda x: float(re.findall(r'\d+', x)[0]) if re.findall(r'\d+', x) else None)
+        self.df["servingsize_numeric"] = (
+            self.df["servingsize"]
+            .astype(str)
+            .apply(
+                lambda x: (
+                    float(re.findall(r"\d+", x)[0]) if re.findall(r"\d+", x) else None
+                )
+            )
+        )
 
         # Convert the target column to numeric
-        self.df[column_name] = pd.to_numeric(self.df[column_name], errors='coerce')
+        self.df[column_name] = pd.to_numeric(self.df[column_name], errors="coerce")
 
         # Define new column name
         new_column_name = f"{column_name} per 100"
 
         # Perform calculation
-        self.df[new_column_name] = (self.df[column_name] / self.df['servingsize_numeric']) * 100
+        self.df[new_column_name] = (
+            self.df[column_name] / self.df["servingsize_numeric"]
+        ) * 100
 
         # Replace inf values safely
-        self.df[new_column_name] = self.df[new_column_name].replace([float('inf'), -float('inf')], None)
+        self.df[new_column_name] = self.df[new_column_name].replace(
+            [float("inf"), -float("inf")], None
+        )
 
         # Drop temporary numeric column
-        self.df.drop(columns=['servingsize_numeric'], inplace=True)
-
+        self.df.drop(columns=["servingsize_numeric"], inplace=True)
 
     def flag_ultra_processed(self, ingredients_column, ultra_processed_ingredients):
         """
         Flags products as ultra-processed if their ingredient list contains any ultra-processed ingredient.
-    
+
         Args:
         ingredients_column (str): The column name that contains ingredient lists.
         ultra_processed_ingredients (list): List of ultra-processed ingredients to check against.
         """
         # Convert list to lowercase for case-insensitive matching
-        ultra_processed_set = set(ingredient.lower() for ingredient in ultra_processed_ingredients)
+        ultra_processed_set = set(
+            ingredient.lower() for ingredient in ultra_processed_ingredients
+        )
 
         # Function to check if any ultra-processed ingredient is in the row's ingredient list
         def check_ultra_processed(ingredient_list):
             if pd.isna(ingredient_list):  # Handle NaN values
                 return 0
-            ingredient_list = [i.strip().lower() for i in ingredient_list.split(",")]  # Convert to lowercase list
-            return 1 if any(ingredient in ultra_processed_set for ingredient in ingredient_list) else 0
+            ingredient_list = [
+                i.strip().lower() for i in ingredient_list.split(",")
+            ]  # Convert to lowercase list
+            return (
+                1
+                if any(
+                    ingredient in ultra_processed_set for ingredient in ingredient_list
+                )
+                else 0
+            )
 
         # Apply function to self.df
-        self.df["ultra_processed_flag"] = self.df[ingredients_column].apply(check_ultra_processed)
+        self.df["ultra_processed_flag"] = self.df[ingredients_column].apply(
+            check_ultra_processed
+        )
 
-
-
-    def flag_high_sugar(self, ingredients_column, total_sugar_column, product_aisle_column, high_sugar_ingredients):
+    def flag_high_sugar(
+        self,
+        ingredients_column,
+        total_sugar_column,
+        product_aisle_column,
+        high_sugar_ingredients,
+    ):
         """
         Flags products as high sugar based on their ingredient list and total sugar content.
 
@@ -350,7 +399,9 @@ class DataCleaner:
         """
 
         # Convert high-sugar ingredient list to lowercase for case-insensitive matching
-        high_sugar_set = set(ingredient.lower() for ingredient in high_sugar_ingredients)
+        high_sugar_set = set(
+            ingredient.lower() for ingredient in high_sugar_ingredients
+        )
 
         def check_high_sugar(row):
             ingredient_list = row[ingredients_column]
@@ -359,18 +410,26 @@ class DataCleaner:
 
             # Check if the ingredient list contains high-sugar ingredients
             if pd.notna(ingredient_list):  # Handle NaN values
-                ingredient_list = [i.strip().lower() for i in ingredient_list.split(",")]
-                has_high_sugar_ingredient = any(ingredient in high_sugar_set for ingredient in ingredient_list)
+                ingredient_list = [
+                    i.strip().lower() for i in ingredient_list.split(",")
+                ]
+                has_high_sugar_ingredient = any(
+                    ingredient in high_sugar_set for ingredient in ingredient_list
+                )
             else:
                 has_high_sugar_ingredient = False
 
             # Determine if the product is a beverage (only if "beverage" or "tea" appears in the product aisle column)
-            is_beverage = isinstance(product_aisle, str) and any(x in product_aisle.lower() for x in ["beverage", "tea"])
+            is_beverage = isinstance(product_aisle, str) and any(
+                x in product_aisle.lower() for x in ["beverage", "tea"]
+            )
 
             # Check if sugar content exceeds the threshold
             if pd.notna(total_sugar):  # Handle NaN values
                 if isinstance(total_sugar, (int, float)):  # Ensure it's numeric
-                    high_sugar_threshold = 5 if is_beverage else 10  # 5g/100ml for beverages, 10g/100g for food
+                    high_sugar_threshold = (
+                        5 if is_beverage else 10
+                    )  # 5g/100ml for beverages, 10g/100g for food
                     exceeds_sugar_limit = total_sugar >= high_sugar_threshold
                 else:
                     exceeds_sugar_limit = False
@@ -383,7 +442,13 @@ class DataCleaner:
         # Apply function to each row
         self.df["high_sugar_flag"] = self.df.apply(check_high_sugar, axis=1)
 
-    def flag_high_saturated_fat(self, ingredients_column, sat_fat_column, product_aisle_column, high_sat_fat_ingredients):
+    def flag_high_saturated_fat(
+        self,
+        ingredients_column,
+        sat_fat_column,
+        product_aisle_column,
+        high_sat_fat_ingredients,
+    ):
         """
         Flags products as high in saturated fat based on their ingredient list and total saturated fat content.
 
@@ -394,7 +459,9 @@ class DataCleaner:
         """
 
         # Convert high-saturated-fat ingredient list to lowercase for case-insensitive matching
-        high_sat_fat_set = set(ingredient.lower() for ingredient in high_sat_fat_ingredients)
+        high_sat_fat_set = set(
+            ingredient.lower() for ingredient in high_sat_fat_ingredients
+        )
 
         def check_high_sat_fat(row):
             ingredient_list = row[ingredients_column]
@@ -403,18 +470,26 @@ class DataCleaner:
 
             # Check if the ingredient list contains high-saturated-fat ingredients
             if pd.notna(ingredient_list):  # Handle NaN values
-                ingredient_list = [i.strip().lower() for i in ingredient_list.split(",")]
-                has_high_sat_fat_ingredient = any(ingredient in high_sat_fat_set for ingredient in ingredient_list)
+                ingredient_list = [
+                    i.strip().lower() for i in ingredient_list.split(",")
+                ]
+                has_high_sat_fat_ingredient = any(
+                    ingredient in high_sat_fat_set for ingredient in ingredient_list
+                )
             else:
                 has_high_sat_fat_ingredient = False
 
             # Determine if the product is a beverage (if "beverage" or "tea" is in the product aisle)
-            is_beverage = isinstance(product_aisle, str) and any(x in product_aisle.lower() for x in ["beverage", "tea"])
+            is_beverage = isinstance(product_aisle, str) and any(
+                x in product_aisle.lower() for x in ["beverage", "tea"]
+            )
 
             # Check if saturated fat content exceeds the threshold
             if pd.notna(total_sat_fat):  # Handle NaN values
                 if isinstance(total_sat_fat, (int, float)):  # Ensure it's numeric
-                    high_sat_fat_threshold = 3 if is_beverage else 4  # 3g/100ml for beverages, 4g/100g for food
+                    high_sat_fat_threshold = (
+                        3 if is_beverage else 4
+                    )  # 3g/100ml for beverages, 4g/100g for food
                     exceeds_sat_fat_limit = total_sat_fat >= high_sat_fat_threshold
                 else:
                     exceeds_sat_fat_limit = False
@@ -426,7 +501,6 @@ class DataCleaner:
 
         # Apply function to each row
         self.df["high_saturated_fat_flag"] = self.df.apply(check_high_sat_fat, axis=1)
-
 
     def flag_high_calories(self, calories_column, product_aisle_column):
         """
@@ -446,10 +520,14 @@ class DataCleaner:
             product_aisle = row[product_aisle_column]
 
             # Determine if the product is a beverage (if "beverage" or "tea" is in the product aisle)
-            is_beverage = isinstance(product_aisle, str) and any(x in product_aisle.lower() for x in ["beverage", "tea"])
+            is_beverage = isinstance(product_aisle, str) and any(
+                x in product_aisle.lower() for x in ["beverage", "tea"]
+            )
 
             # Set the calorie threshold based on product type
-            high_calorie_threshold = 100 if is_beverage else 275  # 100 kcal/100ml for beverages, 275 kcal/100g for food
+            high_calorie_threshold = (
+                100 if is_beverage else 275
+            )  # 100 kcal/100ml for beverages, 275 kcal/100g for food
 
             # Check if calorie content exceeds the threshold
             if pd.notna(total_calories):  # Handle NaN values
@@ -466,8 +544,13 @@ class DataCleaner:
         # Apply function to each row
         self.df["high_calories_flag"] = self.df.apply(check_high_calories, axis=1)
 
-    
-    def flag_high_sodium(self, ingredients_column, sodium_column, product_aisle_column, high_sodium_ingredients):
+    def flag_high_sodium(
+        self,
+        ingredients_column,
+        sodium_column,
+        product_aisle_column,
+        high_sodium_ingredients,
+    ):
         """
         Flags products as high in sodium if they contain high-sodium ingredients OR exceed sodium limits.
 
@@ -476,11 +559,13 @@ class DataCleaner:
         - If it's a food (not a beverage) and Total Sodium ≥ 400 mg/100g (0.4 g/100g), it is flagged.
         - If it contains any high-sodium ingredients from the provided list, it is flagged.
 
-    
+
         """
 
         # Convert ingredient list to lowercase for case-insensitive matching
-        high_sodium_set = set(ingredient.lower() for ingredient in high_sodium_ingredients)
+        high_sodium_set = set(
+            ingredient.lower() for ingredient in high_sodium_ingredients
+        )
 
         def check_high_sodium(row):
             # Get ingredient list, sodium content, and product aisle
@@ -492,22 +577,44 @@ class DataCleaner:
             total_sodium_mg = total_sodium_g * 1000 if pd.notna(total_sodium_g) else 0
 
             # Determine if the product is a beverage (if "beverage" or "tea" is in the product aisle)
-            is_beverage = isinstance(product_aisle, str) and any(x in product_aisle.lower() for x in ["beverage", "tea"])
+            is_beverage = isinstance(product_aisle, str) and any(
+                x in product_aisle.lower() for x in ["beverage", "tea"]
+            )
 
             # Set sodium threshold based on food vs. beverage
-            high_sodium_threshold = 100 if is_beverage else 400  # 100 mg/100ml for beverages, 400 mg/100g for food
+            high_sodium_threshold = (
+                100 if is_beverage else 400
+            )  # 100 mg/100ml for beverages, 400 mg/100g for food
 
             # Check if sodium content exceeds the threshold
-            exceeds_sodium_limit = total_sodium_mg >= high_sodium_threshold if pd.notna(total_sodium_mg) else False
+            exceeds_sodium_limit = (
+                total_sodium_mg >= high_sodium_threshold
+                if pd.notna(total_sodium_mg)
+                else False
+            )
 
             # Check if any high-sodium ingredient is present
             contains_high_sodium_ingredient = False
             if pd.notna(ingredient_list):
-                ingredient_list = [i.strip().lower() for i in ingredient_list.split(",")]
-                contains_high_sodium_ingredient = any(ingredient in high_sodium_set for ingredient in ingredient_list)
+                ingredient_list = [
+                    i.strip().lower() for i in ingredient_list.split(",")
+                ]
+                contains_high_sodium_ingredient = any(
+                    ingredient in high_sodium_set for ingredient in ingredient_list
+                )
 
             # Flag as high sodium (1) if it exceeds the threshold OR contains high-sodium ingredients, else 0
             return 1 if exceeds_sodium_limit or contains_high_sodium_ingredient else 0
 
         # Apply function to self.df
         self.df["high_sodium_flag"] = self.df.apply(check_high_sodium, axis=1)
+
+    def save_csv(self, output_path="export.csv"):
+        """Export current pandas dataframe in CSV formart."""
+        self.df.to_csv(output_path, index=False)
+
+    def num_rows(self):
+        return self.df.shape[0]
+
+    def num_cols(self):
+        return self.df.shape[1]

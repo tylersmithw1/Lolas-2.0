@@ -329,6 +329,8 @@ class DataCleaner:
             )
         )
 
+        # print(self.df["servingsize_numeric"])
+
         # Convert the target column to numeric
         self.df[column_name] = pd.to_numeric(self.df[column_name], errors="coerce")
 
@@ -618,3 +620,55 @@ class DataCleaner:
 
     def num_cols(self):
         return self.df.shape[1]
+
+    def extract_and_convert_weight(self):
+        """
+        Extracts the weight in grams (g) or ounces (oz) from the 'product' column.
+        If ounces (oz) is found, it converts it to grams (g).
+
+        This function will create two new columns:
+        - 'weight_grams': Extracted weight in grams (converted if necessary).
+        - 'weight_oz': Extracted weight in ounces (if found).
+        """
+
+        def extract_and_convert_weight_from_product(product_name):
+            """
+            Extracts weight from the product description in either grams (g) or ounces (oz).
+            If ounces is found, it converts the weight to grams.
+
+            :param product_name: The product description as a string.
+            :return: A tuple (grams, ounces), where each is a numeric value or None.
+            """
+            # Conversion factor from ounces to grams
+            OZ_TO_GRAMS = 28.3495
+
+            grams = None
+            ounces = None
+
+            # Regex to extract grams (g or grams) from the product description
+            grams_match = re.search(
+                r"(\d+\.?\d*)\s*(g|grams)", product_name, re.IGNORECASE
+            )
+            # Regex to extract ounces (oz or ounces) from the product description
+            oz_match = re.search(
+                r"(\d+\.?\d*)\s*(oz|ounces)", product_name, re.IGNORECASE
+            )
+
+            # If grams is found, extract and store the value
+            if grams_match:
+                grams = float(grams_match.group(1))
+
+            # If ounces is found, extract and convert to grams
+            if oz_match:
+                ounces = float(oz_match.group(1))
+                grams = ounces * OZ_TO_GRAMS  # Convert ounces to grams
+
+            return grams, ounces
+
+        # Apply the extraction and conversion function to the 'product' column
+        self.df[["weight_grams", "weight_oz"]] = self.df["product"].apply(
+            lambda x: pd.Series(extract_and_convert_weight_from_product(x))
+        )
+
+    def standardize_serving_size_g(self, product, serving_size):
+        units = ["g", "grams", "oz"]

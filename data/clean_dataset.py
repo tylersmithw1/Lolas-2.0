@@ -2,7 +2,7 @@
 
 from data_cleaner import DataCleaner
 
-dc: DataCleaner = DataCleaner("./data/products_updated.xlsx")
+dc: DataCleaner = DataCleaner("products_updated.xlsx")
 
 dc.drop("updated")
 
@@ -457,6 +457,95 @@ dc.flag_high_saturated_fat(
 
 # high calorie
 dc.flag_high_calories("energykcal", "aisle")
+
+# nns
+nns_ingredients = [
+    "ACESULFAME",
+    "OSLADIN",
+    "E 954",
+    "ADVANTAME",
+    "OUBLI",
+    "E 955",
+    "ALITAME",
+    "PENTADIN",
+    "E 957",
+    "ALTERN",
+    "PUREVIA",
+    "E 959",
+    "ASPARTAME",
+    "REB A",
+    "E 960",
+    "ASPARTIME",
+    "REBAUDIOSIDE A",
+    "E 961",
+    "BRAZZEIN",
+    "REBIANA",
+    "E 962",
+    "CANDY LEAF",
+    "SACCHARIN",
+    "E 969",
+    "CURCULIN",
+    "SPLENDA",
+    "ERYTHRITOL",
+    "CWEET",
+    "STEVIA",
+    "GALACTITOL",
+    "CYCLAMATE",
+    "STEVIOL",
+    "GLUCITOL",
+    "CYCLAMIC ACID",
+    "STEVIOL GLYCOSIDES",
+    "HYDROGENATED ISOMALTULOSE",
+    "ENLITEN",
+    "SUCRALOSE",
+    "ISOMALT",
+    "EQUAL",
+    "SUGAR LEAF",
+    "LACTITOL",
+    "INSTA SWEET",
+    "SUGAR TWIN",
+    "MALTITOL",
+    "KALTAME",
+    "SUNETT",
+    "MANNITOL",
+    "LUMBAH",
+    "SWEETLEAF",
+    "POLYGLYCITOL",
+    "LUO HAN GUO",
+    "SWEET’N LOW",
+    "SORBITOL",
+    "MABINLIN",
+    "SWEET ONE",
+    "XYLITOL",
+    "MONATIN",
+    "SYCLAMATE",
+    "E 420",
+    "MONELLIN",
+    "TRICHLOROGALACTOSUCROSE",
+    "E 421",
+    "MONK FRUIT EXTRACT",
+    "TWIN SWEET",
+    "E 953",
+    "MONK FRUIT",
+    "TRUVIA",
+    "E 964",
+    "NATRA TASTE",
+    "THAUMATIN",
+    "E 965",
+    "NECTA SWEET",
+    "E 950",
+    "E 966",
+    "NEOHESPERIDINE DIHYDROCHALCONE",
+    "E 951",
+    "E 967",
+    "NEOTAME",
+    "E 952",
+    "E 968",
+    "NUTRA SWEET",
+]
+
+# flag nns
+dc.flag_nns("ingredients", nns_ingredients)
 
 # save file
 dc.save_data("clean_dataset.xlsx")

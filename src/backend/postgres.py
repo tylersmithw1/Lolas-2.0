@@ -10,11 +10,8 @@ try:
         user=os.environ["DB_USER"],
         password=os.environ["DB_PASS"],
         dbname=os.environ["DB_NAME"],
-        port=5432,  
-        
+        port=5432,
     )
     print("Database connection successful!")
 except Exception as e:
     print(f"Error connecting to database: {e}")
-
-

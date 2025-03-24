@@ -389,6 +389,91 @@ ultraprocessed_ingredients = [
     "SWEETENER",
 ]
 
+nns_ingredients = [
+    "ACESULFAME",
+    "OSLADIN",
+    "E 954",
+    "ADVANTAME",
+    "OUBLI",
+    "E 955",
+    "ALITAME",
+    "PENTADIN",
+    "E 957",
+    "ALTERN",
+    "PUREVIA",
+    "E 959",
+    "ASPARTAME",
+    "REB A",
+    "E 960",
+    "ASPARTIME",
+    "REBAUDIOSIDE A",
+    "E 961",
+    "BRAZZEIN",
+    "REBIANA",
+    "E 962",
+    "CANDY LEAF",
+    "SACCHARIN",
+    "E 969",
+    "CURCULIN",
+    "SPLENDA",
+    "ERYTHRITOL",
+    "CWEET",
+    "STEVIA",
+    "GALACTITOL",
+    "CYCLAMATE",
+    "STEVIOL",
+    "GLUCITOL",
+    "CYCLAMIC ACID",
+    "STEVIOL GLYCOSIDES",
+    "HYDROGENATED ISOMALTULOSE",
+    "ENLITEN",
+    "SUCRALOSE",
+    "ISOMALT",
+    "EQUAL",
+    "SUGAR LEAF",
+    "LACTITOL",
+    "INSTA SWEET",
+    "SUGAR TWIN",
+    "MALTITOL",
+    "KALTAME",
+    "SUNETT",
+    "MANNITOL",
+    "LUMBAH",
+    "SWEETLEAF",
+    "POLYGLYCITOL",
+    "LUO HAN GUO",
+    "SWEET’N LOW",
+    "SORBITOL",
+    "MABINLIN",
+    "SWEET ONE",
+    "XYLITOL",
+    "MONATIN",
+    "SYCLAMATE",
+    "E 420",
+    "MONELLIN",
+    "TRICHLOROGALACTOSUCROSE",
+    "E 421",
+    "MONK FRUIT EXTRACT",
+    "TWIN SWEET",
+    "E 953",
+    "MONK FRUIT",
+    "TRUVIA",
+    "E 964",
+    "NATRA TASTE",
+    "THAUMATIN",
+    "E 965",
+    "NECTA SWEET",
+    "E 950",
+    "E 966",
+    "NEOHESPERIDINE DIHYDROCHALCONE",
+    "E 951",
+    "E 967",
+    "NEOTAME",
+    "E 952",
+    "E 968",
+    "NUTRA SWEET",
+]
+
 
 def test_remove_text_1():
     """Use case for remove_unwanted_text() and strip_spaces() on
@@ -770,3 +855,12 @@ def test_flag_sodium():
     expected = []
     # TODO
     assert False
+
+
+def test_flag_NNS():
+    dc: DataCleaner = DataCleaner("./data/testing_subset.xlsx")
+    expected = [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    dc.flag_nns("ingredients", nns_ingredients)
+    print(dc.to_list("nns_flag"))
+    assert len(expected) == len(dc.to_list("nns_flag"))
+    assert expected == dc.to_list("nns_flag")

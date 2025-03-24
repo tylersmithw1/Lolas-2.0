@@ -672,3 +672,36 @@ class DataCleaner:
 
     def standardize_serving_size_g(self, product, serving_size):
         units = ["g", "grams", "oz"]
+
+    def flag_nns(self, ingredients_column, nns_ingredients):
+        """
+        Flags products as containing nns.
+
+        Conditions:
+        - If the product's ingredient list contains any of the nns ingredients it's classified as nns
+
+        Args:
+        ingredients_column (str): Column containing the list of ingredients each product uses.
+        nns_ingredients (str): List containing all ingredients classified as nns.
+        """
+        # Convert list to lowercase for case-insensitive matching
+        nns_ingredients_set = set(ingredient.lower() for ingredient in nns_ingredients)
+
+        # Function to check if any nns ingredient is in the row's ingredient list
+        def check_nns(ingredient_list):
+            if pd.isna(ingredient_list):  # Handle NaN values
+                return 0
+            ingredient_list_lower = [
+                i.strip().lower() for i in ingredient_list.split(",")
+            ]  # Convert to lowercase list
+            return (
+                1
+                if any(
+                    ingredient in nns_ingredients_set
+                    for ingredient in ingredient_list_lower
+                )
+                else 0
+            )
+
+        # Apply function to self.df
+        self.df["nns_flag"] = self.df[ingredients_column].apply(check_nns)

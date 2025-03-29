@@ -220,7 +220,7 @@ class DataCleaner:
                 match = re.search(r"\(([^)]+)\)", value)  # Find text inside parentheses
                 if match:
                     extracted = match.group(1).strip()  # Extract and strip whitespace
-                    if extracted.lower() != "s":  # Ensure it's not just "s"
+                    if extracted.lower() != "s" or extracted.lower() != "es":  # Ensure it's not just "s"
                         return extracted  # Return extracted value
             return value  # Return original value if no valid match
 
@@ -234,8 +234,6 @@ class DataCleaner:
             "box": "250g",
             "container": "300g",
             "bagel": "100g",
-            "ea": "100g",
-            "roll": "68g",
             "slice": "30g",
             "biscuit": "58g",
             "breadstick": "30g",
@@ -243,6 +241,11 @@ class DataCleaner:
             "k-cup": "10g",
             "pan fried slice": "40g",
             "stick": "65g",
+            "pod": "10g",
+            "packet": "3.3g",
+            "tea bag": "8 fl oz",
+            "Tea Bag": "8 fl oz"
+
         }
 
         def convert(value):
@@ -705,3 +708,12 @@ class DataCleaner:
 
         # Apply function to self.df
         self.df["nns_flag"] = self.df[ingredients_column].apply(check_nns)
+
+    def extract_blank_rows(self, column):
+        self.df = self.df[self.df[column].isna()]
+
+
+    def standardize_nutrient_columns(self):
+        nutrient_columns = ['energykcal', 'fat', 'saturatedfat', 'transfat', 'carbohydrates', 'sugar', 'salt', 'fibre', 'protein']
+        columns_per_100 = [f'{col} per 100' for col in nutrient_columns]
+        self.df.loc[self.df[nutrient_columns].sum(axis=1) == 0, columns_per_100] = 0

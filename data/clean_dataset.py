@@ -6,6 +6,9 @@ dc: DataCleaner = DataCleaner("products_updated.xlsx")
 
 dc.drop("updated")
 
+# standardize nutrient columns with all 0s
+
+
 # convert units in columns
 dc.convert_m_to_grams("fat")
 dc.convert_m_to_grams("transfat")
@@ -547,5 +550,10 @@ nns_ingredients = [
 # flag nns
 dc.flag_nns("ingredients", nns_ingredients)
 
+# extract blanks
+# dc.extract_blank_rows("servingsize")
+
+dc.standardize_nutrient_columns()
+
 # save file
-dc.save_data("clean_dataset.xlsx")
+dc.save_data("dummy_data.xlsx")

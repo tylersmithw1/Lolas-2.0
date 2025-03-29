@@ -33,6 +33,8 @@ dotenv.load_dotenv()
 
 
 class chatService:
+    
+    RECURSION_LIMIT = 2 * 100 + 1
 
     def getBedrockChat(self):
         llm = ChatBedrockConverse(
@@ -68,6 +70,8 @@ class chatService:
     def getChatResponse(self, user_input):
         chat = self.getBedrockChat()
         agent = create_react_agent(chat, self.TOOLS, state_modifier=self.PROMPT)
-        messages = agent.invoke({"messages": [("user", user_input)]})
-        output = messages["messages"][-1].content
+        config = {"recursion_limit": self.RECURSION_LIMIT}
+        messages = agent.invoke({"messages": [("user", user_input)]}, config)
+        output = messages["messages"]
+        #output = messages["messages"][-1].content
         return output

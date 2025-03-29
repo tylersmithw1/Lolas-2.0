@@ -16,7 +16,7 @@ df = pd.read_excel(file_path)
 
 @tool
 def initial_data_search(
-    query, df=df, threshold=80, output_filename="filtered_results.xlsx"
+    query, df=df, threshold=80
 ):
     """Use this tool to retrieve the immediate food data relating to the user's search term."""
 
@@ -57,7 +57,7 @@ def initial_data_search(
         inplace=True,
     )
 
-    columns_to_search = ["aisle", "shelf", "product"]
+    columns_to_search = ["aisle", "shelf", "product", "department"]
 
     # Create an empty list to hold the rows that match the query
     matching_rows = []
@@ -98,4 +98,4 @@ def initial_data_search(
     # return []
 
 
-# print(initial_data_search("bagels"))
+#print(initial_data_search("chips"))

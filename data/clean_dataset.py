@@ -556,4 +556,4 @@ dc.flag_nns("ingredients", nns_ingredients)
 dc.standardize_nutrient_columns()
 
 # save file
-dc.save_data("dummy_data.xlsx")
+dc.save_data("cleaned_data.xlsx")

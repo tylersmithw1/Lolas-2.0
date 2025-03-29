@@ -250,33 +250,26 @@ class DataCleaner:
 
         def convert(value):
             if isinstance(value, str):
-                match = re.search(
-                    r"(\d*\.?\d*)\s*([\w\s-]+)", value
-                )  # Extract number and unit
+                # Attempt to extract number and unit
+                match = re.search(r"(\d*\.?\d*)\s*([\w\s-]+)", value)
                 if match:
-                    quantity = (
-                        float(match.group(1)) if match.group(1) else 1
-                    )  # Default to 1 if missing
-                    unit = (
-                        match.group(2).strip().lower()
-                    )  # Extract unit and normalize case
+                    quantity = float(match.group(1)) if match.group(1) else 1  # Default to 1 if missing
+                    unit = match.group(2).strip().lower()  # Normalize case
 
-                    # Find corresponding unit in mapping
+                    # Iterate through the unit mapping to find a match
                     for key in unit_mapping:
                         if key in unit:
                             base_value = unit_mapping[key]
 
-                            # Extract numeric part from base value (e.g., "500ml" -> 500)
-                            base_quantity, base_unit = re.match(
-                                r"(\d+)([a-zA-Z]+)", base_value
-                            ).groups()
-                            base_quantity = float(base_quantity)
+                            # Match the base unit and quantity
+                            base_match = re.match(r"(\d+)([a-zA-Z]+)", base_value)
+                            if base_match:
+                                base_quantity, base_unit = base_match.groups()
+                                base_quantity = float(base_quantity)
 
-                            # Scale by quantity if greater than 1
-                            converted_value = (
-                                f"{int(quantity * base_quantity)}{base_unit}"
-                            )
-                            return converted_value
+                                # Convert value by scaling quantity
+                                converted_value = f"{int(quantity * base_quantity)}{base_unit}"
+                                return converted_value
 
             return value  # Return original value if no match found
 

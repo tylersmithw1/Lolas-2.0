@@ -9,21 +9,12 @@ import json
 BASE_DIR = os.path.dirname(
     os.path.abspath(__file__)
 )  # Directory of tools.py (same as main.py)
-file_path = os.path.join(BASE_DIR, "sub-products.xlsx")  # Full path to the Excel file
+file_path = os.path.join(BASE_DIR, "dropped_columns.xlsx")  # Full path to the Excel file
+
 
 df = pd.read_excel(file_path)
 
-
-@tool
-def initial_data_search(
-    query, df=df, threshold=80
-):
-    """Use this tool to retrieve the immediate food data relating to the user's search term."""
-
-    for column in df.select_dtypes(include=["object"]).columns:
-        df[column] = df[column].fillna("").astype(str)
-
-    df.drop(
+df.drop(
         [
             "price",
             "servingspercontainer",
@@ -56,6 +47,53 @@ def initial_data_search(
         axis=1,
         inplace=True,
     )
+
+df.to_excel("dropped_columns.xlsx")
+
+
+
+@tool
+def initial_data_search(
+    query, df=df, threshold=80
+):
+    """Use this tool to retrieve the immediate food data relating to the user's search term."""
+
+    for column in df.select_dtypes(include=["object"]).columns:
+        df[column] = df[column].fillna("").astype(str)
+
+    #df.drop(
+        [
+            "price",
+            "servingspercontainer",
+            "servingsize",
+            "energykcal",
+            "fat",
+            "saturatedfat",
+            "transfat",
+            "carbohydrates",
+            "sugar",
+            "salt",
+            "fibre",
+            "protein",
+            "ingredients",
+            "image",
+            "redmeat",
+            "shelfrank",
+            "packsize",
+            "packunit",
+            "energykcal per 100",
+            "fat per 100",
+            "saturatedfat per 100",
+            "transfat per 100",
+            "carbohydrates per 100",
+            "sugar per 100",
+            "salt per 100",
+            "fibre per 100",
+            "protein per 100",
+        ],
+        axis=1,
+        inplace=True,
+    #)
 
     columns_to_search = ["aisle", "shelf", "product", "department"]
 

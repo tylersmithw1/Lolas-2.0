@@ -243,15 +243,17 @@ class DataCleaner:
             "stick": "65g",
             "pod": "10g",
             "packet": "3.3g",
-            "tea bag": "8 fl oz",
-            "Tea Bag": "8 fl oz"
+            "tea bag": "8 fl oz"
+            
 
         }
 
         def convert(value):
             if isinstance(value, str):
                 # Attempt to extract number and unit
-                match = re.search(r"(\d*\.?\d*)\s*([\w\s-]+)", value)
+
+                value_lower = value.lower().strip()
+                match = re.search(r"(\d*\.?\d*)\s*([\w\s-]+)", value_lower)
                 if match:
                     quantity = float(match.group(1)) if match.group(1) else 1  # Default to 1 if missing
                     unit = match.group(2).strip().lower()  # Normalize case

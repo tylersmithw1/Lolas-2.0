@@ -37,7 +37,7 @@ function App() {
         onChange={(e) => setSearch(e.target.value)}
         style={{
           width: "80%",
-          padding: "10px",
+          padding: "15px",
           fontSize: "16px",
           marginBottom: "10px",
         }}

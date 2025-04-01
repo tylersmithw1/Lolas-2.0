@@ -35,15 +35,17 @@ dc.strip_spaces("servingspercontainer")
 
 
 # standardising 'servingsize' column
-dc.convert_oz_to_ml("servingsize")
+dc.convert_fl_oz_to_ml("servingsize")
 dc.strip_spaces("servingsize")
+dc.convert_oz_to_g("servingsize")
 dc.clean_bracketed_values("servingsize")
 dc.extract_bracketed_value("servingsize")
 dc.strip_spaces("servingsize")
 dc.convert_package_based_size("servingsize")
+dc.strip_spaces("servingsize")
 dc.convert_cups_to_ml("servingsize")
 dc.strip_spaces("servingsize")
-dc.convert_tbsp_to_ml("servingsize")
+dc.convert_tbsp_to_g("servingsize")
 dc.strip_spaces("servingsize")
 
 # Try to fill blank serving size entries based on product value
@@ -558,6 +560,18 @@ dc.flag_nns("ingredients", nns_ingredients)
 # dc.extract_blank_rows("servingsize")
 
 dc.standardize_nutrient_columns()
+
+dc.convert_fl_oz_to_ml("servingsize")
+dc.strip_spaces("servingsize")
+dc.convert_oz_to_g("servingsize")
+dc.strip_spaces("servingsize")
+dc.convert_package_based_size("servingsize")
+dc.strip_spaces("servingsize")
+dc.convert_cups_to_ml("servingsize")
+dc.strip_spaces("servingsize")
+dc.convert_tbsp_to_g("servingsize")
+dc.strip_spaces("servingsize")
+
 
 # save file
 dc.save_data("cleaned_data.xlsx")

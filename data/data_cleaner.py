@@ -197,7 +197,7 @@ class DataCleaner:
         res = self.df[column].tolist()
         return res
 
-    def convert_oz_to_ml(self, column):
+    def convert_fl_oz_to_ml(self, column):
         """
         Converts values in a specified column from ounces (oz/fl oz) to milliliters (mL).
         :param column: The column name to process.
@@ -206,15 +206,39 @@ class DataCleaner:
         def convert(value):
             if isinstance(value, str):
                 match = re.search(
-                    r"([\d]+(?:\.\d+)?)\s*(?:fl oz|oz|ounces|fl. oz)",
+                    r"([\d]+(?:\.\d+)?)\s*(?:fl oz|fl. oz|fl. oz.|fluid ounces|Fluid ounce)",
+                    value,
+                    re.IGNORECASE,
+                )
+                if match:
+                    try:
+                        fl_oz = float(match.group(1))
+                        ml = fl_oz * 29.5735  # Convert to mL
+                        return f"{ml:.2f} ml"
+                    except ValueError:
+                        return value  # Return original value if conversion fails
+            return value  # Return original value if no conversion is needed
+
+        self.df[column] = self.df[column].apply(convert)
+
+    def convert_oz_to_g(self, column):
+        """
+        Converts values in a specified column from ounces (oz) to grams (g).
+        :param column: The column name to process.
+        """
+
+        def convert(value):
+            if isinstance(value, str):
+                match = re.search(
+                    r"([\d]+(?:\.\d+)?)\s*(?:oz|ounces|oz.|Oz.|OZ)",
                     value,
                     re.IGNORECASE,
                 )
                 if match:
                     try:
                         ounces = float(match.group(1))
-                        ml = ounces * 29.5735  # Convert to mL
-                        return f"{ml:.2f} mL"
+                        grams = ounces * 28.3495  # Convert to g
+                        return f"{grams:.2f} g"
                     except ValueError:
                         return value  # Return original value if conversion fails
             return value  # Return original value if no conversion is needed
@@ -250,20 +274,20 @@ class DataCleaner:
     def convert_package_based_size(self, column):
         # Define mappings of known units to approximate values
         unit_mapping = {
-            "can": "355ml",
-            "bottle": "500ml",
-            "box": "250g",
-            "container": "300g",
-            "bagel": "100g",
-            "slice": "30g",
-            "biscuit": "58g",
-            "breadstick": "30g",
-            "apple": "150g",
-            "k-cup": "10g",
-            "pan fried slice": "40g",
-            "stick": "65g",
-            "pod": "10g",
-            "packet": "3.3g",
+            "can": "355 ml",
+            "bottle": "500 ml",
+            "box": "250 g",
+            "container": "300 g",
+            "bagel": "100 g",
+            "slice": "30 g",
+            "biscuit": "58 g",
+            "breadstick": "30 g",
+            "apple": "150 g",
+            "k-cup": "10 g",
+            "pan fried slice": "40 g",
+            "stick": "65 g",
+            "pod": "10 g",
+            "packet": "3.3 g",
             "tea bag": "8 fl oz"
         }
 
@@ -301,22 +325,22 @@ class DataCleaner:
             match = re.search(r"([\d\.]+)\s*(?:cup|cups)", str(value), re.IGNORECASE)
             if match:
                 cups = float(match.group(1))
-                return f"{cups * 240}ml"
+                return f"{cups * 240} ml"
             return value  # Return original value if no match
 
         self.df[column] = self.df[column].apply(convert)
 
-    def convert_tbsp_to_ml(self, column):
+    def convert_tbsp_to_g(self, column):
 
         def convert(value):
             match = re.search(
-                r"([\d\.]+)\s*(?:tbsp|tablespoon|tablespoons|tsp)",
+                r"([\d\.]+)\s*(?:tbsp|tablespoon|tablespoons)",
                 str(value),
                 re.IGNORECASE,
             )
             if match:
                 tbsp = float(match.group(1))
-                return f"{tbsp * 15}ml"
+                return f"{tbsp * 21.25} g"
             return value  # Return original value if no match
 
         self.df[column] = self.df[column].apply(convert)
@@ -736,16 +760,15 @@ class DataCleaner:
         Extracts serving size from product column, handling different placements and formats.
         """
         if isinstance(product_value, str):
-            # Look for patterns like "15.2 oz", "10 fl oz", "1 quart", "18 fluid ounce"
-            match = re.search(r"(\d*\.?\d+)\s*(fl\.?\s*oz|fluid ounce|oz|ml|quart|l|liter)", product_value, re.IGNORECASE)
+            # Improved regex to capture more variations of units
+            match = re.search(r"(\d*\.?\d+)\s*(fl\.?\s*oz|fluid ounce|oz|ml|quart|liter|g|kg|tablet|scoop|cup|bag|bottle)", product_value, re.IGNORECASE)
             if match:
-                return f"{match.group(1)} {match.group(2).replace('fluid ounce', 'fl oz').replace('liter', 'l')}"  # Normalize units
+                return f"{match.group(1)} {match.group(2).replace('fluid ounce', 'fl oz').replace('liter', 'l').replace('kg', 'g')}"  # Normalize units
         return None  # No match found
 
     def fill_serving_size(self, product_column, serving_size_column):
         """
         Fills missing serving sizes using product column if available.
-
         """
         self.df[serving_size_column] = self.df[serving_size_column].apply(
             lambda x: x if pd.notna(x) else self.extract_serving_from_product(self.df[product_column])

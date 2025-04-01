@@ -29,4 +29,3 @@ for unit, count in non_g_ml_units.items():
     total += count
 
 print(total)
-# print(non_g_ml_units)

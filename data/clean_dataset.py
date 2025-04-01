@@ -6,8 +6,6 @@ dc: DataCleaner = DataCleaner("products_updated.xlsx")
 
 dc.drop("updated")
 
-# standardize nutrient columns with all 0s
-
 
 # convert units in columns
 dc.convert_m_to_grams("fat")
@@ -24,6 +22,7 @@ dc.convert_m_to_grams("protein")
 dc.remove_text("energykcal", "cal")
 dc.strip_spaces("energykcal")
 dc.to_float("energykcal")
+
 
 # remove text from servings per container column
 dc.remove_text("servingspercontainer", "About")
@@ -48,9 +47,6 @@ dc.strip_spaces("servingsize")
 dc.convert_tbsp_to_g("servingsize")
 dc.strip_spaces("servingsize")
 
-# Try to fill blank serving size entries based on product value
-dc.fill_serving_size('product', 'servingsize')
-
 
 # standardise columns to per 100g or 100ml
 dc.standardize_column("energykcal")
@@ -62,6 +58,7 @@ dc.standardize_column("sugar")
 dc.standardize_column("salt")
 dc.standardize_column("fibre")
 dc.standardize_column("protein")
+
 
 # flag UPF
 ultraprocessed_ingredients = [
@@ -336,6 +333,7 @@ ultraprocessed_ingredients = [
 ]
 dc.flag_ultra_processed("ingredients", ultraprocessed_ingredients)
 
+
 # high sugar
 high_sugar_ingredients = [
     "AGAVE",
@@ -430,7 +428,6 @@ high_sodium_ingredients = [
     "SLAT",
     "SODIUM CHLORIDE",
 ]
-
 dc.flag_high_sodium("ingredients", "salt", "aisle", high_sodium_ingredients)
 
 # high saturated fat
@@ -466,6 +463,7 @@ dc.flag_high_saturated_fat(
 
 # high calorie
 dc.flag_high_calories("energykcal", "aisle")
+
 
 # nns
 nns_ingredients = [
@@ -552,14 +550,16 @@ nns_ingredients = [
     "E 968",
     "NUTRA SWEET",
 ]
-
-# flag nns
 dc.flag_nns("ingredients", nns_ingredients)
 
 # extract blanks
 # dc.extract_blank_rows("servingsize")
 
 dc.standardize_nutrient_columns()
+dc.convert_tsp_to_g("servingsize")
+dc.convert_l_to_ml("servingsize")
+dc.convert_mg_to_g("servingsize")
+dc.convert_weird_g("servingsize")
 
 dc.convert_fl_oz_to_ml("servingsize")
 dc.strip_spaces("servingsize")

@@ -206,7 +206,7 @@ class DataCleaner:
         def convert(value):
             if isinstance(value, str):
                 match = re.search(
-                    r"([\d]+(?:\.\d+)?)\s*(?:fl oz|fl. oz|fl. oz.|fluid ounces|Fluid ounce)",
+                    r"([\d]+(?:\.\d+)?)\s*(?:fl oz|fl. oz|fl. oz.|fluid ounces|Fluid ounce|floz/)",
                     value,
                     re.IGNORECASE,
                 )
@@ -230,7 +230,7 @@ class DataCleaner:
         def convert(value):
             if isinstance(value, str):
                 match = re.search(
-                    r"([\d]+(?:\.\d+)?)\s*(?:oz|ounces|oz.|Oz.|OZ)",
+                    r"([\d]+(?:\.\d+)?)\s*(?:oz|ounces|oz.|Oz.|OZ|ounce)",
                     value,
                     re.IGNORECASE,
                 )
@@ -288,7 +288,8 @@ class DataCleaner:
             "stick": "65 g",
             "pod": "10 g",
             "packet": "3.3 g",
-            "tea bag": "8 fl oz"
+            "tea bag": "8 fl oz",
+            "teabag": "8 fl oz"
         }
 
         def convert(value):
@@ -334,7 +335,7 @@ class DataCleaner:
 
         def convert(value):
             match = re.search(
-                r"([\d\.]+)\s*(?:tbsp|tablespoon|tablespoons)",
+                r"([\d\.]+)\s*(?:tbsp|tablespoon|tablespoons|tbs)",
                 str(value),
                 re.IGNORECASE,
             )
@@ -773,3 +774,43 @@ class DataCleaner:
         self.df[serving_size_column] = self.df[serving_size_column].apply(
             lambda x: x if pd.notna(x) else self.extract_serving_from_product(self.df[product_column])
         )
+
+    def convert_tsp_to_g(self, column):
+        def convert(value):
+            match = re.search(r"([\d\.]+)\s*(?:tsp|teaspoon|tsp.)", str(value), re.IGNORECASE)
+            if match:
+                tsp = float(match.group(1))
+                return f"{tsp * 5.69} g"
+            return value  # Return original value if no match
+
+        self.df[column] = self.df[column].apply(convert)
+
+    def convert_l_to_ml(self, column):
+        def convert(value):
+            match = re.search(r"([\d\.]+)\s*(?:l|liter|liter.|liters|liters.|l.|L|L.)", str(value), re.IGNORECASE)
+            if match:
+                l = float(match.group(1))
+                return f"{l * 1000} ml"
+            return value  # Return original value if no match
+
+        self.df[column] = self.df[column].apply(convert)
+
+    def convert_mg_to_g(self, column):
+        def convert(value):
+            match = re.search(r"([\d\.]+)\s*(?:mg)", str(value), re.IGNORECASE)
+            if match:
+                mg = float(match.group(1))
+                return f"{mg / 1000} g"
+            return value  # Return original value if no match
+
+        self.df[column] = self.df[column].apply(convert)
+
+    def convert_weird_g(self, column):
+        def convert(value):
+            match = re.search(r"([\d\.]+)\s*(?:g mix|gram|g without shells)", str(value), re.IGNORECASE)
+            if match:
+                val = float(match.group(1))
+                return f"{val} g"
+            return value  # Return original value if no match
+
+        self.df[column] = self.df[column].apply(convert)

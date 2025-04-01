@@ -221,6 +221,20 @@ class DataCleaner:
 
         self.df[column] = self.df[column].apply(convert)
 
+    def clean_bracketed_values(self, column):
+        """
+        Pre-process the bracketed values by ignoring (s) or (es) before extracting other values in parentheses.
+        This method modifies the "column" by cleaning values like 'tablet(s)' to 'tablets'.
+        """
+        def clean(value):
+            if isinstance(value, str):
+                # Remove only (s) or (es) at the end of a word
+                value = re.sub(r"\((s|es)\)", "", value, flags=re.IGNORECASE).strip()
+            return value  # Return cleaned string
+
+        # Apply the function to the column
+        self.df[column] = self.df[column].apply(clean)
+
     def extract_bracketed_value(self, column):
 
         def extract(value):
@@ -228,8 +242,7 @@ class DataCleaner:
                 match = re.search(r"\(([^)]+)\)", value)  # Find text inside parentheses
                 if match:
                     extracted = match.group(1).strip()  # Extract and strip whitespace
-                    if extracted.lower() != "s" or extracted.lower() != "es":  # Ensure it's not just "s"
-                        return extracted  # Return extracted value
+                    return extracted  # Return extracted value
             return value  # Return original value if no valid match
 
         self.df[column] = self.df[column].apply(extract)
@@ -713,8 +726,27 @@ class DataCleaner:
     def extract_blank_rows(self, column):
         self.df = self.df[self.df[column].isna()]
 
-
     def standardize_nutrient_columns(self):
         nutrient_columns = ['energykcal', 'fat', 'saturatedfat', 'transfat', 'carbohydrates', 'sugar', 'salt', 'fibre', 'protein']
         columns_per_100 = [f'{col} per 100' for col in nutrient_columns]
         self.df.loc[self.df[nutrient_columns].sum(axis=1) == 0, columns_per_100] = 0
+
+    def extract_serving_from_product(self, product_value):
+        """
+        Extracts serving size from product column, handling different placements and formats.
+        """
+        if isinstance(product_value, str):
+            # Look for patterns like "15.2 oz", "10 fl oz", "1 quart", "18 fluid ounce"
+            match = re.search(r"(\d*\.?\d+)\s*(fl\.?\s*oz|fluid ounce|oz|ml|quart|l|liter)", product_value, re.IGNORECASE)
+            if match:
+                return f"{match.group(1)} {match.group(2).replace('fluid ounce', 'fl oz').replace('liter', 'l')}"  # Normalize units
+        return None  # No match found
+
+    def fill_serving_size(self, product_column, serving_size_column):
+        """
+        Fills missing serving sizes using product column if available.
+
+        """
+        self.df[serving_size_column] = self.df[serving_size_column].apply(
+            lambda x: x if pd.notna(x) else self.extract_serving_from_product(self.df[product_column])
+        )

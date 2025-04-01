@@ -37,6 +37,7 @@ dc.strip_spaces("servingspercontainer")
 # standardising 'servingsize' column
 dc.convert_oz_to_ml("servingsize")
 dc.strip_spaces("servingsize")
+dc.clean_bracketed_values("servingsize")
 dc.extract_bracketed_value("servingsize")
 dc.strip_spaces("servingsize")
 dc.convert_package_based_size("servingsize")
@@ -44,6 +45,9 @@ dc.convert_cups_to_ml("servingsize")
 dc.strip_spaces("servingsize")
 dc.convert_tbsp_to_ml("servingsize")
 dc.strip_spaces("servingsize")
+
+# Try to fill blank serving size entries based on product value
+dc.fill_serving_size('product', 'servingsize')
 
 
 # standardise columns to per 100g or 100ml

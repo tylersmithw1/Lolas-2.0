@@ -78,7 +78,15 @@ class DataCleaner:
         :param column: Name of column.
         """
 
-        self.df[column] = self.df[column].astype(float)
+        def clean_numeric(value):
+            if isinstance(value, str):
+                # Extract only numeric parts (including decimal)
+                match = re.search(r"(\d+\.?\d*)", value)
+                return float(match.group(1)) if match else None  # Convert to float or None
+            return value  # Keep existing numeric values
+
+        # Apply the cleaning function and convert to float
+        self.df[column] = self.df[column].apply(clean_numeric).astype(float)
 
     def round(self, column, decimals):
         """
@@ -244,33 +252,31 @@ class DataCleaner:
             "pod": "10g",
             "packet": "3.3g",
             "tea bag": "8 fl oz"
-            
-
         }
 
         def convert(value):
             if isinstance(value, str):
-                # Attempt to extract number and unit
-
                 value_lower = value.lower().strip()
-                match = re.search(r"(\d*\.?\d*)\s*([\w\s-]+)", value_lower)
+
+                # Regex to match cases like "1 K-Cup" or "1.0 tea bag"
+                match = re.match(r"(\d*\.?\d*)?\s*([\w\s-]+)", value_lower)
                 if match:
                     quantity = float(match.group(1)) if match.group(1) else 1  # Default to 1 if missing
-                    unit = match.group(2).strip().lower()  # Normalize case
+                    unit = match.group(2).strip().lower()
 
                     # Iterate through the unit mapping to find a match
                     for key in unit_mapping:
                         if key in unit:
                             base_value = unit_mapping[key]
 
-                            # Match the base unit and quantity
-                            base_match = re.match(r"(\d+)([a-zA-Z]+)", base_value)
+                            # Extract numeric part from mapping
+                            base_match = re.match(r"(\d*\.?\d*)\s*([a-zA-Z\s]+)", base_value)
                             if base_match:
-                                base_quantity, base_unit = base_match.groups()
-                                base_quantity = float(base_quantity)
+                                base_quantity = float(base_match.group(1))
+                                base_unit = base_match.group(2).strip()
 
                                 # Convert value by scaling quantity
-                                converted_value = f"{int(quantity * base_quantity)}{base_unit}"
+                                converted_value = f"{int(quantity * base_quantity)} {base_unit}"
                                 return converted_value
 
             return value  # Return original value if no match found

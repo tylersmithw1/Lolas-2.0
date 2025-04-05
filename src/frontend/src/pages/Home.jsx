@@ -51,7 +51,7 @@ function Home() {
   // Fetch products when search query is submitted
   const fetchProducts = async (query) => {
     try {
-      const response = await fetch("http://127.0.0.1:8000/product-info", {
+      const response = await fetch("http://127.0.0.1:8000/grocery", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ search_string: query }),

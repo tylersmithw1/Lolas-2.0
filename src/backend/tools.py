@@ -9,9 +9,40 @@ import json
 BASE_DIR = os.path.dirname(
     os.path.abspath(__file__)
 )  # Directory of tools.py (same as main.py)
-file_path = os.path.join(BASE_DIR, "sub-products.xlsx")  # Full path to the Excel file
+file_path = os.path.join(BASE_DIR, "cleaned_sub-products.xlsx")  # Full path to the Excel file
 
 df = pd.read_excel(file_path)
+# df.drop(
+#         [
+#             "price",
+#             "servingspercontainer",
+#             "servingsize",
+#             "energykcal",
+#             "fat",
+#             "saturatedfat",
+#             "transfat",
+#             "carbohydrates",
+#             "sugar",
+#             "salt",
+#             "fibre",
+#             "protein",
+#             "ingredients",
+#             "image",
+#             "redmeat",
+#             "shelfrank",
+#             "packsize",
+#             "packunit",
+#             "protein per 100",
+#             "fibre per 100",
+#             "carbohydrates per 100",
+#             "transfat per 100",
+#             "fat per 100"
+
+#         ],
+#         axis=1,
+#         inplace=True,
+#     )
+# df.to_excel("cleaned_sub-products.xlsx", index=False)
 
 
 @tool
@@ -22,40 +53,6 @@ def initial_data_search(
 
     for column in df.select_dtypes(include=["object"]).columns:
         df[column] = df[column].fillna("").astype(str)
-
-    df.drop(
-        [
-            "price",
-            "servingspercontainer",
-            "servingsize",
-            "energykcal",
-            "fat",
-            "saturatedfat",
-            "transfat",
-            "carbohydrates",
-            "sugar",
-            "salt",
-            "fibre",
-            "protein",
-            "ingredients",
-            "image",
-            "redmeat",
-            "shelfrank",
-            "packsize",
-            "packunit",
-            "energykcal per 100",
-            "fat per 100",
-            "saturatedfat per 100",
-            "transfat per 100",
-            "carbohydrates per 100",
-            "sugar per 100",
-            "salt per 100",
-            "fibre per 100",
-            "protein per 100",
-        ],
-        axis=1,
-        inplace=True,
-    )
 
     columns_to_search = ["aisle", "shelf", "product", "department"]
 
@@ -98,4 +95,4 @@ def initial_data_search(
     # return []
 
 
-#print(initial_data_search("chips"))
+#print(initial_data_search("juice"))

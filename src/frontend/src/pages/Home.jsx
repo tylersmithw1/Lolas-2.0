@@ -30,6 +30,7 @@ function Home() {
   // filter 
   const [searchQuery, setSearchQuery] = useState("");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [allProducts, setAllProducts] = useState([]);
   const [selectedFilters, setSelectedFilters] = useState({
     vegan: false,
     glutenFree: false,
@@ -51,7 +52,7 @@ function Home() {
   // Fetch products when search query is submitted
   const fetchProducts = async (query) => {
     try {
-      const response = await fetch("http://127.0.0.1:8000/grocery", {
+      const response = await fetch("http://localhost:8000/grocery", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ search_string: query }),
@@ -60,10 +61,10 @@ function Home() {
       if (!response.ok) throw new Error("Failed to fetch");
 
       const data = await response.json();
-      console.log("Full API Response:", JSON.stringify(data, null, 2)); // Log the full response for debugging
-      
-      setProducts(data.products || []);
-      console.log("Updated Products State:", data.products); // Log the updated product state
+      console.log(data)
+      setProducts(data.products || []);  // Update the state directly
+      setAllProducts(data.products || []);
+
     } catch (error) {
       console.error("Error fetching products:", error);
     }

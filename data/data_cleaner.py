@@ -216,7 +216,7 @@ class DataCleaner:
                         ml = fl_oz * 29.5735  # Convert to mL
                         return f"{ml:.2f} ml"
                     except ValueError:
-                        return value  # Return original value if conversion fails
+                        return value  # Return original value if conversion failed
             return value  # Return original value if no conversion is needed
 
         self.df[column] = self.df[column].apply(convert)

@@ -528,7 +528,7 @@ class DataCleaner:
                 x in product_aisle.lower() for x in ["beverage", "tea"]
             )
 
-            # Check if saturated fat content exceeds the threshold
+            # Check if saturated fat content exceeds the given threshold
             if pd.notna(total_sat_fat):  # Handle NaN values
                 if isinstance(total_sat_fat, (int, float)):  # Ensure it's numeric
                     high_sat_fat_threshold = (

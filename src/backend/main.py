@@ -8,10 +8,8 @@ from fastapi import FastAPI, HTTPException, Depends
 import os
 from fastapi.responses import JSONResponse
 import pandas as pd
-import json
-import re
-
 import logging
+
 
 
 
@@ -25,7 +23,8 @@ app = FastAPI()
 BASE_DIR = os.path.dirname(
     os.path.abspath(__file__)
 )  # Directory of tools.py (same as main.py)
-file_path = os.path.join(BASE_DIR, "sub-products.xlsx")  # Full path to the Excel file
+#file_path = os.path.join(BASE_DIR, "sub-products.xlsx")  # Full path to the Excel file
+file_path = os.path.join(BASE_DIR, "cleaned_data.xlsx") 
 
 df = pd.read_excel(file_path)
 
@@ -55,7 +54,7 @@ async def create_ranking(query: GrocerySearch, chat_service: chatService = Depen
     try:
         response = chat_service.getChatResponse(query.search_string)
         logger.info(f"Chatbot raw response: {response}")
-        #return response
+        
     
         ranked_names = response.get("ranking", [])
         # Match and return full product details from your Excel df
@@ -72,5 +71,3 @@ async def create_ranking(query: GrocerySearch, chat_service: chatService = Depen
     except Exception as e:
         print(e)
         raise HTTPException(status_code=400, detail=str(e))
-
-

@@ -9,7 +9,8 @@ import json
 BASE_DIR = os.path.dirname(
     os.path.abspath(__file__)
 )  # Directory of tools.py (same as main.py)
-file_path = os.path.join(BASE_DIR, "cleaned_sub-products.xlsx")  # Full path to the Excel file
+#file_path = os.path.join(BASE_DIR, "cleaned_sub-products.xlsx")  # Full path to the Excel file
+file_path = os.path.join(BASE_DIR, "ai_products.xlsx") 
 
 df = pd.read_excel(file_path)
 # df.drop(
@@ -42,19 +43,20 @@ df = pd.read_excel(file_path)
 #         axis=1,
 #         inplace=True,
 #     )
-# df.to_excel("cleaned_sub-products.xlsx", index=False)
+# df.to_excel("ai_products.xlsx", index=False)
 
 
 @tool
 def initial_data_search(
-    query, df=df, threshold=80
+    query, df=df, threshold=95
 ):
     """Use this tool to retrieve the immediate food data relating to the user's search term."""
 
     for column in df.select_dtypes(include=["object"]).columns:
         df[column] = df[column].fillna("").astype(str)
 
-    columns_to_search = ["aisle", "shelf", "product", "department"]
+    #columns_to_search = ["aisle", "shelf", "product", "department"]
+    columns_to_search = ["product"]
 
     # Create an empty list to hold the rows that match the query
     matching_rows = []
@@ -95,5 +97,5 @@ def initial_data_search(
     # return []
 
 
-#print(initial_data_search("juice"))
+#print(initial_data_search.invoke("Ice Mountain Brand 100% Natural Spring Water, 16.9-Ounce Bottles (Pack Of 32)"))
 

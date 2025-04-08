@@ -92,7 +92,7 @@ class chatService:
     def getChatResponse(self, user_input):
         chat = self.getBedrockChat()
         agent = create_react_agent(chat, self.TOOLS, state_modifier=self.PROMPT2)
-        config = {"recursion_limit": self.RECURSION_LIMIT}
+        config = {"recursion_limit": self.RECURSION_LIMIT, "timeout": 20*60}
         messages = agent.invoke({"messages": [("user", user_input)]}, config)
         output = messages["messages"]
         ai_output = messages["messages"][-1].content

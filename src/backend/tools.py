@@ -9,8 +9,8 @@ import json
 BASE_DIR = os.path.dirname(
     os.path.abspath(__file__)
 )  # Directory of tools.py (same as main.py)
-#file_path = os.path.join(BASE_DIR, "cleaned_sub-products.xlsx")  # Full path to the Excel file
-file_path = os.path.join(BASE_DIR, "ai_products.xlsx") 
+# file_path = os.path.join(BASE_DIR, "cleaned_data_3.xlsx")  # Full path to the Excel file
+file_path = os.path.join(BASE_DIR, "cleaned_ai_products.xlsx") 
 
 df = pd.read_excel(file_path)
 # df.drop(
@@ -43,12 +43,12 @@ df = pd.read_excel(file_path)
 #         axis=1,
 #         inplace=True,
 #     )
-# df.to_excel("ai_products.xlsx", index=False)
+# df.to_excel("cleaned_ai_products.xlsx", index=False)
 
 
 @tool
 def initial_data_search(
-    query, df=df, threshold=95
+    query, df=df, threshold=98
 ):
     """Use this tool to retrieve the immediate food data relating to the user's search term."""
 

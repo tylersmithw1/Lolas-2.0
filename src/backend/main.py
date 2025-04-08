@@ -24,7 +24,7 @@ BASE_DIR = os.path.dirname(
     os.path.abspath(__file__)
 )  # Directory of tools.py (same as main.py)
 #file_path = os.path.join(BASE_DIR, "sub-products.xlsx")  # Full path to the Excel file
-file_path = os.path.join(BASE_DIR, "cleaned_data.xlsx") 
+file_path = os.path.join(BASE_DIR, "cleaned_data_3.xlsx") 
 
 df = pd.read_excel(file_path)
 
@@ -53,12 +53,15 @@ logger = logging.getLogger(__name__)
 async def create_ranking(query: GrocerySearch, chat_service: chatService = Depends()):
     try:
         response = chat_service.getChatResponse(query.search_string)
-        logger.info(f"Chatbot raw response: {response}")
+       #logger.info(f"Chatbot raw response: {response}")
+        print(f"Chatbot raw response: {response}")
         
     
         ranked_names = response.get("ranking", [])
+        print(f"ranked names: {ranked_names}")
         # Match and return full product details from your Excel df
         matched = df[df["product"].isin(ranked_names)]
+        print(f"matched products: {matched}")
 
         # Keep the original ranking order
         ranked_detailed = []

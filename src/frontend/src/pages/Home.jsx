@@ -49,6 +49,8 @@ function Home() {
     { name: "Snacks", image: "/images/categories/snacks.jpg" }
   ];
 
+  const [noProductFound, setNoProductFound] = useState(false);
+
   // Fetch products when search query is submitted
   const fetchProducts = async (query) => {
     try {
@@ -58,15 +60,41 @@ function Home() {
         body: JSON.stringify({ search_string: query }),
       });
 
+      if (response.status === 400) {
+        setProducts([]);
+        setAllProducts([]);
+        setNoProductFound(true);
+        return;
+      }
+
       if (!response.ok) throw new Error("Failed to fetch");
+      
+
 
       const data = await response.json();
+
+      const productList = data.products || [];
+
+
+      if (productList.length === 0) {
+        setNoProductFound(true);
+      } else {
+        setNoProductFound(false);
+      }
+
       console.log(data)
-      setProducts(data.products || []);  // Update the state directly
-      setAllProducts(data.products || []);
+      //setProducts(data.products || []);  // Update the state directly
+      //setAllProducts(data.products || []);
+      setNoProductFound(false);
+
+    setProducts(productList);
+    setAllProducts(productList);
 
     } catch (error) {
       console.error("Error fetching products:", error);
+      setNoProductFound(true);
+      setProducts([]);
+    setAllProducts([]);
     }
   };
 
@@ -170,25 +198,29 @@ function Home() {
 
       {/* Main Content */}
       <Container maxWidth="lg" sx={{ mt: 4 }}>
-        {products.length > 0 ? (
-          /* Search Results Page */
-          <Box>
-            <Typography variant="h4" gutterBottom>
-              Healthiest Options for '{searchQuery}'
-            </Typography>
-            
-            <Divider sx={{ mb: 3 }} />
-            <Grid container spacing={3}>
-              {products.map((product, index) => (
-                <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
-                  <ProductCard
-                    name={product.product || "Unknown Product"}
-                    price={product.price || 0}
-                  />
-                </Grid>
-              ))}
-            </Grid>
-          </Box>
+  {noProductFound ? (
+    <Box>
+      <Typography variant="h4" gutterBottom>
+        No product found for '{searchQuery}'
+      </Typography>
+    </Box>
+  ) : products.length > 0 ? (
+    <Box>
+      <Typography variant="h4" gutterBottom>
+        Healthiest Options for '{searchQuery}'
+      </Typography>
+      <Divider sx={{ mb: 3 }} />
+      <Grid container spacing={3}>
+        {products.map((product, index) => (
+          <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
+            <ProductCard
+              name={product.product || "Unknown Product"}
+              price={product.price || 0}
+            />
+          </Grid>
+        ))}
+      </Grid>
+    </Box>
         ) : (
           /* Homepage Content */
           <Box>

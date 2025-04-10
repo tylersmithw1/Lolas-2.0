@@ -49,7 +49,7 @@ df = pd.read_excel(file_path)
 
 @tool
 def initial_data_search(
-    query, df=df, threshold=98
+    query, df=df, threshold=95
 ):
     """Use this tool to retrieve the immediate food data relating to the user's search term."""
 

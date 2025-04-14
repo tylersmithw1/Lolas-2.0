@@ -55,10 +55,10 @@ class chatService:
 
         "4) A product with multiple concerning flags and high numeric values (e.g., high sugar and sodium) should rank lower than a product with only one issue."
         
-        "4) High-calorie flag is ONLY a priority when present for a product with any of the other flags. A product with only the high_calories_flag set to 1 and no other flags should not be ranked poorly — this flag should only affect ranking when combined with another flag."
+        "5) High-calorie flag is ONLY a priority when present for a product with any of the other flags. A product with only the high_calories_flag set to 1 and no other flags should not be ranked poorly — this flag should only affect ranking when combined with another flag."
         "For example, product A flagged as high calorie and no other flags would be ranked higher than product B flagged as high calorie and flagged as high sugar, and high sodium."
 
-        "5) Return the result of your ranking in a JSON format with the following exact structure: Make sure to include the <json> tags in your output. "
+        "6) Return the result of your ranking in a JSON format with the following exact structure: Make sure to include the <json> tags in your output. "
         "For example: 'Here is the ranking: <json> {'ranking': ['Product Name 1', 'Product Name 2', 'Product Name 3']} </json>. Do not give insight into your thinking process," 
     )
         

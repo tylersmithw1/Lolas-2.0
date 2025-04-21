@@ -1,3 +1,4 @@
+"api endpoint for lola's 2.0"
 # import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -39,8 +40,7 @@ logger = logging.getLogger(__name__)
 BASE_DIR = os.path.dirname(
     os.path.abspath(__file__)
 )  
-#file_path = os.path.join(BASE_DIR, "sub-products.xlsx")  # Full path to the Excel file
-file_path = os.path.join(BASE_DIR, "cleaned_data_3.xlsx") 
+file_path = os.path.join(BASE_DIR, "cleaned_data_3.xlsx")  #Full path to the Excel file
 df = pd.read_excel(file_path)
 
 

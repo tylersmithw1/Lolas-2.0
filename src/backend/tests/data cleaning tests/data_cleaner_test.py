@@ -1,3 +1,4 @@
+"Tests for the data cleaning methods used to clean excel data"
 import pytest
 from data.data_cleaner import DataCleaner
 

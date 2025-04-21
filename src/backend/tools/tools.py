@@ -1,3 +1,4 @@
+"tool for ai agent to search for food data in a pandas dataframe using fuzzy matching"
 from langchain_core.tools import tool
 import pandas as pd
 from fuzzywuzzy import fuzz
@@ -9,8 +10,7 @@ import json
 BASE_DIR = os.path.dirname(
     os.path.abspath(__file__)
 )  # Directory of tools.py (same as main.py)
-# file_path = os.path.join(BASE_DIR, "cleaned_data_3.xlsx")  # Full path to the Excel file
-file_path = os.path.join(BASE_DIR, "clean_ai_products.xlsx") 
+file_path = os.path.join(BASE_DIR, "clean_ai_products.xlsx")  # Full path to the Excel file
 
 df = pd.read_excel(file_path)
 # df.drop(
@@ -99,5 +99,3 @@ def initial_data_search(
 
 
 #print(initial_data_search.invoke("Ice Mountain Brand 100% Natural Spring Water, 16.9-Ounce Bottles (Pack Of 32)"))
-
-#check

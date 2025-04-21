@@ -1,3 +1,4 @@
+"Service methods to support api for lola's 2.0. This handles the chatbot ranking response."
 import dotenv
 from langchain_community.chat_models import BedrockChat
 from langchain_aws import ChatBedrockConverse

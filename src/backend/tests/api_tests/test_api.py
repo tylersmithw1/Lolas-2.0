@@ -1,3 +1,4 @@
+"Test for api endpoints"
 import pytest
 import pandas as pd
 from fastapi.testclient import TestClient
@@ -8,7 +9,7 @@ from services.chat_service import chatService
 #from ...src.backend.service import chatService
 client: TestClient = TestClient(app)
 
-#check
+
 
 # mock response from chat service when searching 'orange juice'
 mock_response = {

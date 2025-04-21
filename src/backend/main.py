@@ -3,30 +3,17 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List
-from service import chatService
+#from src.backend.services.chat_service import chatService
+from services.chat_service import chatService
 from fastapi import FastAPI, HTTPException, Depends
 import os
 from fastapi.responses import JSONResponse
 import pandas as pd
 import logging
-
-
-
-
-
-class GrocerySearch(BaseModel):
-    search_string: str
+from models.grocery_search import GrocerySearch
 
 
 app = FastAPI()
-
-BASE_DIR = os.path.dirname(
-    os.path.abspath(__file__)
-)  # Directory of tools.py (same as main.py)
-#file_path = os.path.join(BASE_DIR, "sub-products.xlsx")  # Full path to the Excel file
-file_path = os.path.join(BASE_DIR, "cleaned_data_3.xlsx") 
-
-df = pd.read_excel(file_path)
 
 origins = ["http://localhost:8000",  # React default port
     "http://127.0.0.1:8000",
@@ -47,6 +34,14 @@ app.add_middleware(
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+
+BASE_DIR = os.path.dirname(
+    os.path.abspath(__file__)
+)  
+#file_path = os.path.join(BASE_DIR, "sub-products.xlsx")  # Full path to the Excel file
+file_path = os.path.join(BASE_DIR, "cleaned_data_3.xlsx") 
+df = pd.read_excel(file_path)
 
 
 @app.post("/grocery")

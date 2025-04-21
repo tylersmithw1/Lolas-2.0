@@ -95,3 +95,4 @@ networkx
 openpyxl
 fuzzywuzzy
 python-Levenshtein
+pandas

@@ -31,8 +31,3 @@ prompts:
 
         6) Return the result of your ranking in a JSON format with the following exact structure: Make sure to include the <json> tags in your output.
         For example: 'Here is the ranking: <json> {'ranking': ['Product Name 1', 'Product Name 2', 'Product Name 3']} </json>. Do not give insight into your thinking process."
-      
-providers:
-  - bedrock:amazon.nova-pro-v1:0
-      
-        

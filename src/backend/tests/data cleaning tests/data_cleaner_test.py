@@ -537,7 +537,9 @@ def test_energykcal_1():
         140.0,
         170.0,
     ]
-    cleaner: DataCleaner = DataCleaner("./data/products.xlsx")
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(current_dir, "products.xlsx")
+    cleaner: DataCleaner = DataCleaner(file_path)
     cleaner.remove_text("energykcal", "cal")
     cleaner.strip_spaces("energykcal")
     cleaner.to_float("energykcal")
@@ -569,7 +571,9 @@ def test_to_float_fat():
         6.98,
         5.78,
     ]
-    cleaner: DataCleaner = DataCleaner("./data/products.xlsx")
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(current_dir, "products.xlsx")
+    cleaner: DataCleaner = DataCleaner(file_path)
     cleaner.round("price", 2)
     res = cleaner.preview(20)["price"].tolist()
     assert expected == res
@@ -578,11 +582,14 @@ def test_to_float_fat():
 def test_strip_spaces_edge():
     """If strip_spaces() is called on a column containing no spaces, exception must be raised."""
     with pytest.raises(Exception):
-        cleaner: DataCleaner = DataCleaner("./data/products.xlsx")
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        file_path = os.path.join(current_dir, "products.xlsx")
+        cleaner: DataCleaner = DataCleaner(file_path)
         cleaner.strip_spaces("price")
 
 
 def test_round_use():
+    "Use case for rounding price column to 1 and 2 decimal places."
     expected_1: list[str] = [
         5.0,
         4.0,
@@ -627,19 +634,26 @@ def test_round_use():
         6.98,
         5.78,
     ]
-    cleaner1: DataCleaner = DataCleaner("./data/products.xlsx")
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(current_dir, "products.xlsx")
+    cleaner1: DataCleaner = DataCleaner(file_path)
     cleaner1.round("price", 1)
     res1 = cleaner1.preview(20)["price"].tolist()
     assert res1 == expected_1
 
-    cleaner2: DataCleaner = DataCleaner("./data/products.xlsx")
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(current_dir, "products.xlsx")
+    cleaner2: DataCleaner = DataCleaner(file_path)
     cleaner2.round("price", 2)
     res2 = cleaner2.preview(20)["price"].tolist()
     assert res2 == expected_2
 
 
 def test_strip_spaces():
-    dc: DataCleaner = DataCleaner("./data/testing_subset.xlsx")
+    """Use case to remove energykcal and cal, then strip spaces."""
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(current_dir, "testing_subset.xlsx")
+    dc: DataCleaner = DataCleaner(file_path)
     dc.remove_text("energykcal", "cal")
     energy_expected_space = [
         "282.0 ",
@@ -692,7 +706,9 @@ def test_strip_spaces():
 
 
 def test_drop():
-    dc: DataCleaner = DataCleaner("./data/testing_subset.xlsx")
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(current_dir, "testing_subset.xlsx")
+    dc: DataCleaner = DataCleaner(file_path)
     assert "aisle" in dc.df.columns
     assert "product" in dc.df.columns
     prev_cols = dc.num_cols()
@@ -704,7 +720,9 @@ def test_drop():
 
 
 def test_cols_rows():
-    dc: DataCleaner = DataCleaner("./data/testing_subset.xlsx")
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(current_dir, "testing_subset.xlsx")
+    dc: DataCleaner = DataCleaner(file_path)
     assert dc.num_cols() == 23
     assert dc.num_rows() == 20
     dc.drop("aisle")
@@ -713,20 +731,26 @@ def test_cols_rows():
 
 
 def test_count_unique():
-    dc: DataCleaner = DataCleaner("./data/testing_subset.xlsx")
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(current_dir, "testing_subset.xlsx")
+    dc: DataCleaner = DataCleaner(file_path)
     assert dc.count_unique_entries("aisle") == 4
     assert dc.count_unique_entries("updated") == 0
 
 
 def test_drop_blanks():
-    dc: DataCleaner = DataCleaner("./data/testing_subset.xlsx")
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(current_dir, "testing_subset.xlsx")
+    dc: DataCleaner = DataCleaner(file_path)
     assert dc.num_rows() == 20
     dc.drop_blank_rows()
     assert dc.num_rows() == 0
 
 
 def test_m_to_g():
-    dc: DataCleaner = DataCleaner("./data/testing_subset.xlsx")
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(current_dir, "testing_subset.xlsx")
+    dc: DataCleaner = DataCleaner(file_path)
     expected = [
         0.165,
         0.150,
@@ -753,8 +777,11 @@ def test_m_to_g():
     assert dc.to_list("salt") == expected
 
 
+#not done
 def test_standardize_serving_g():
-    dc: DataCleaner = DataCleaner("./data/testing_subset.xlsx")
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(current_dir, "testing_subset.xlsx")
+    dc: DataCleaner = DataCleaner(file_path)
     expected = [
         118,
         81,
@@ -778,9 +805,11 @@ def test_standardize_serving_g():
         170.097,
     ]
 
-
+#failed
 def test_standardize_column():
-    dc: DataCleaner = DataCleaner("./data/testing_subset.xlsx")
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(current_dir, "testing_subset.xlsx")
+    dc: DataCleaner = DataCleaner(file_path)
     fat_expected = [
         8.47,
         13.58,
@@ -815,7 +844,9 @@ def test_standardize_column():
 
 
 def test_flag_ultraprocessed():
-    dc: DataCleaner = DataCleaner("./data/testing_subset.xlsx")
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(current_dir, "testing_subset.xlsx")
+    dc: DataCleaner = DataCleaner(file_path)
     # assume that "fructose" will be flagged, but NOT high fructose corn syrup
     expected = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1]
     ultraprocessed_subset = ["FRUCTOSE"]
@@ -825,8 +856,11 @@ def test_flag_ultraprocessed():
     assert expected == dc.to_list("ultra_processed_flag")
 
 
+#failed
 def test_flag_sugar():
-    dc: DataCleaner = DataCleaner("./data/testing_subset.xlsx")
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(current_dir, "testing_subset.xlsx")
+    dc: DataCleaner = DataCleaner(file_path)
     expected = []
     high_sugar_subset = ["GLUCOSE"]
     dc.flag_high_sugar("ingredients", "sugar", "aisle", high_sugar_subset)
@@ -834,28 +868,35 @@ def test_flag_sugar():
     assert expected == dc.to_list("high_sugar_flag")
 
 
+#failed
 def test_extract_weight():
-    dc: DataCleaner = DataCleaner("./data/testing_subset.xlsx")
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(current_dir, "testing_subset.xlsx")
+    dc: DataCleaner = DataCleaner(file_path)
     dc.extract_and_convert_weight()
     expected = []
     print(dc.to_list("weight_grams"))
     assert expected == dc.to_list("weight_grams")
 
 
+#not done
 def test_flag_sat_fat():
-    dc: DataCleaner = DataCleaner("./data/testing_subset.xlsx")
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(current_dir, "testing_subset.xlsx")
+    dc: DataCleaner = DataCleaner(file_path)
     expected = []
     # TODO
     assert False
 
 
+#not done
 def test_flag_cals():
     dc: DataCleaner = DataCleaner("./data/testing_subset.xlsx")
     expected = []
     # TODO
     assert False
 
-
+#not done
 def test_flag_sodium():
     dc: DataCleaner = DataCleaner("./data/testing_subset.xlsx")
     expected = []
@@ -864,7 +905,9 @@ def test_flag_sodium():
 
 
 def test_flag_NNS():
-    dc: DataCleaner = DataCleaner("./data/testing_subset.xlsx")
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(current_dir, "testing_subset.xlsx")
+    dc: DataCleaner = DataCleaner(file_path)
     expected = [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     dc.flag_nns("ingredients", nns_ingredients)
     print(dc.to_list("nns_flag"))

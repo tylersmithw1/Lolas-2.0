@@ -38,6 +38,7 @@ def mock_chat_service_exception():
 
 
 def test_create_ranking_success(mock_chat_service):
+    """testing the /grocery endpoint with a successful response from the chat service"""
     # override real dependencies with just the mock chat service for this test
     app.dependency_overrides[chatService] = lambda: mock_chat_service
 
@@ -73,6 +74,7 @@ def test_create_ranking_success(mock_chat_service):
 
 
 def test_product_matching_order_preserved():
+    """testing that the order of the products returned matches the order of the ranked names"""
     # mock data frame
     data = [
         {"product": "Tropicana Trop50 No Pulp Calcium + Vitamin D Orange Juice, 89 Oz Bottle", "price": 5.18},
@@ -104,6 +106,7 @@ def test_product_matching_order_preserved():
 
 
 def test_create_ranking_exception():
+    """testing the /grocery endpoint with an invalid request"""
     # send data with an empty search string to trigger an exception
     response = client.post("/grocery", json={"search string": ""})
 
@@ -112,6 +115,7 @@ def test_create_ranking_exception():
 
 
 def test_create_ranking_chat_fail(mock_chat_service_exception):
+    """testing the /grocery endpoint with a failed chat service response"""
     # override real dependencies with just the mock chat service for this test
     app.dependency_overrides[chatService] = lambda: mock_chat_service_exception
 

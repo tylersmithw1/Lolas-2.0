@@ -10,8 +10,6 @@ import ast
 import re
 
 
-
-#check
 dotenv.load_dotenv()
 
 

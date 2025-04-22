@@ -1,6 +1,9 @@
 "Tests for the data cleaning methods used to clean excel data"
+
+#FOR ALL THE FILE PATHS, FOLLOW MY EXAMPLE ON LINES 485-487
 import pytest
 from data.data_cleaner import DataCleaner
+import os
 
 high_saturated_fat_ingredients = [
     "ANIMAL FAT",
@@ -479,7 +482,9 @@ nns_ingredients = [
 def test_remove_text_1():
     """Use case for remove_unwanted_text() and strip_spaces() on
     servingspercontainer column as String values."""
-    cleaner: DataCleaner = DataCleaner("./data/products.xlsx")
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(current_dir, "products.xlsx")
+    cleaner: DataCleaner = DataCleaner(file_path)
     cleaner.remove_text("servingspercontainer", "About")
     cleaner.strip_spaces("servingspercontainer")
     expected: list[str] = [

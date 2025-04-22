@@ -1,5 +1,5 @@
 # Created by venv; see https://docs.python.org/3/library/venv.html
-.venv
+env
 .env
 src/backend/__pycache__
 src/backend/models/__pycache__
@@ -8,6 +8,4 @@ src/backend/tests/api_tests/__pycache__
 src/backend/tests/data cleaning tests/__pycache__
 src/backend/tools/__pycache__
 src/backend/services/__pycache__
-.pytest_cache
-
-
+data/__pycache__

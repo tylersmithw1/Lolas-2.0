@@ -4,14 +4,28 @@ from services.chat_service import chatService
 from tools.tools import initial_data_search
 from unittest.mock import patch, MagicMock
 from langchain.schema import AIMessage, HumanMessage
+import pandas as pd
+import json
 
-# from src.backend.service import chatService
-# from src.backend.tools import initial_data_search
 
 @pytest.fixture
-
 def service():
     return chatService()
+
+
+@pytest.fixture
+def mock_df():
+    data = {
+        "product": [
+            "Ice Mountain Brand 100% Natural Spring Water, 16.9-Ounce Bottles (Pack Of 32)",
+            "Coca Cola Classic 12oz Cans",
+            "Organic Almond Milk Unsweetened",
+            "Peanut Butter Crunchy Jar 16oz",
+            "Propel Electrolyte Water, Kiwi Strawberry, 16.9 Oz Bottles, 12 Count",
+            "Aquafina Purified Water, 16.9 Fl Oz Bottles, 32 Count"
+        ]
+    }
+    return pd.DataFrame(data)
 
 
 def test_extract_json_valid(service):
@@ -20,7 +34,6 @@ def test_extract_json_valid(service):
     result = service.extract_json(response)
 
     assert result == {'ranking': ['Product A', 'Product B', 'Product C']}
-
 
 
 def test_extract_json_invalid(service):
@@ -35,7 +48,6 @@ def test_extract_json_bad_json(service):
     response = "<json> {'ranking': ['Product A', Product B']} </json>"  # missing a quote around Product B
     result = service.extract_json(response)
     assert result is None
-
 
 
 @patch("services.chat_service.create_react_agent")
@@ -61,14 +73,12 @@ def test_get_chat_response(mock_get_chat, mock_create_agent, service):
     ]
 }
     mock_create_agent.return_value = mock_agent
-    
+
     # Run the method with the mock data
     result = service.getChatResponse("Rank the products")
-    
+
     # Assert the correct JSON ranking is returned
     assert result == {'ranking': ['Real Good Pepperoni Pizza Snack Bites', 'Pepperoni Pizza Snack Rolls']}  
-
-
 
 
 @patch("services.chat_service.ChatBedrockConverse")
@@ -87,3 +97,32 @@ def test_get_bedrock_chat(mock_chat, service):
     )
     # Confirm the returned object is what we mocked
     assert result == mock_llm
+
+
+def test_initial_data_search_exact_match(mock_df):
+    query = "Coca Cola Classic 12oz Cans"
+    result = initial_data_search.invoke({"query": query, "df": mock_df, "threshold": 95})
+    data = json.loads(result)
+    assert len(data) == 1
+    assert "Coca Cola" in data[0]["product"]
+
+
+def test_initial_data_search_no_match(mock_df):
+    query = "Takis"
+    result = initial_data_search.invoke({"query": query, "df": mock_df, "threshold": 90})
+    assert result is None or json.loads(result) == []
+
+
+def test_intiial_data_search_multiple_matches(mock_df):
+    query = "Water"
+    result = initial_data_search.invoke({"query": query, "df": mock_df, "threshold": 80})
+    data = json.loads(result)
+    assert all("water" in item["product"].lower() for item in data)
+
+
+def test_initial_data_search_partial_match(mock_df):
+    query = "kiwi strawberry"
+    result = initial_data_search.invoke({"query": query, "df": mock_df, "threshold": 80})
+    data = json.loads(result)
+    assert any("Kiwi Strawberry" in item["product"] for item in data)
+    assert "Kiwi Strawberry" in data[0]["product"]

@@ -56,6 +56,8 @@ function ProductDetail() {
       setProduct({
         ...location.state,
         description: "This premium product is carefully selected for quality and freshness. It's part of our commitment to bringing you the best grocery options to support a healthy lifestyle.",
+
+        // this is static/mock data we need to exchange with actual data
         nutrition: {
           calories: "120 per serving",
           servingSize: "100g",

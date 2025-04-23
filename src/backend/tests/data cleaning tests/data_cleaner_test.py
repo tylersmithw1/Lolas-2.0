@@ -4,6 +4,7 @@
 import pytest
 from data.data_cleaner import DataCleaner
 import os
+import pandas as pd
 
 high_saturated_fat_ingredients = [
     "ANIMAL FAT",
@@ -477,6 +478,109 @@ nns_ingredients = [
     "E 968",
     "NUTRA SWEET",
 ]
+
+
+@pytest.fixture
+def mock_excel_file(tmp_path):
+    df = pd.DataFrame({
+        "price": [10, None, 30, None, 50],
+        "name": ["A", "B", "C", "D", "E"]
+    })
+    # Save the DataFrame to a temporary Excel file
+    input_path = tmp_path / "mock_input.xlsx"
+    df.to_excel(input_path, index=False, sheet_name="Sheet1", engine="openpyxl")
+
+    output_path = tmp_path / "mock_output.xlsx"
+
+    return df, input_path, output_path
+
+
+def test_preview(monkeypatch):
+    sample_df = pd.DataFrame({
+        "price": [10, 20, 30, 40, 50],
+        "name": ["A", "B", "C", "D", "E"]
+    })
+
+    # Patch pd.read_excel to return the mock_df
+    monkeypatch.setattr(pd, "read_excel", lambda *args, **kwargs: sample_df.copy())
+    cleaner = DataCleaner("fake_path.xlsx")
+
+    res = cleaner.preview(3)
+    expected = sample_df[:3]
+
+    pd.testing.assert_frame_equal(res, expected)
+
+
+
+def test_save_data(mock_excel_file):
+    df_original, input_path, output_path = mock_excel_file
+
+    cleaner = DataCleaner(input_path)
+    cleaner.save_data(output_path)
+
+    assert output_path.exists()
+
+    df_saved = pd.read_excel(output_path, engine='openpyxl')
+    pd.testing.assert_frame_equal(df_saved, df_original)
+
+
+def test_handle_missing_mean(monkeypatch):
+    sample_df = pd.DataFrame({
+        "price": [10, None, 30, None, 50],
+        "name": ["A", "B", "C", "D", "E"]
+    })
+
+    # Patch pd.read_excel to return the mock_df
+    monkeypatch.setattr(pd, "read_excel", lambda *args, **kwargs: sample_df.copy())
+
+    cleaner = DataCleaner("fake_path.xlsx")
+    assert cleaner.df["price"].isnull().sum() == 2
+
+    cleaner.handle_missing("price", strategy="mean")
+
+    assert cleaner.df["price"].isnull().sum() == 0
+
+    expected_mean = (10 + 30 + 50) / 3
+    assert all(val == expected_mean for val in cleaner.df.loc[[1, 3], "price"])
+
+
+def test_handle_missing_zero(monkeypatch):
+    sample_df = pd.DataFrame({
+        "price": [10, None, 30, None, 50],
+        "name": ["A", "B", "C", "D", "E"]
+    })
+
+    # Patch pd.read_excel to return the mock_df
+    monkeypatch.setattr(pd, "read_excel", lambda *args, **kwargs: sample_df.copy())
+
+    cleaner = DataCleaner("fake_path.xlsx")
+    assert cleaner.df["price"].isnull().sum() == 2
+
+    cleaner.handle_missing("price", strategy="zero")
+
+    assert cleaner.df["price"].isnull().sum() == 0
+    assert all(val == 0 for val in cleaner.df.loc[[1, 3], "price"])
+
+
+def test_handle_missing_drop(monkeypatch):
+    sample_df = pd.DataFrame({
+        "price": [10, None, 30, None, 50],
+        "name": ["A", "B", "C", "D", "E"]
+    })
+
+    # Patch pd.read_excel to return the mock_df
+    monkeypatch.setattr(pd, "read_excel", lambda *args, **kwargs: sample_df.copy())
+
+    cleaner = DataCleaner("fake_path.xlsx")
+    assert cleaner.df["price"].isnull().sum() == 2
+
+    cleaner.handle_missing("price", strategy="drop")
+
+    assert len(cleaner.df) == 3
+    assert cleaner.df["price"].isnull().sum() == 0
+
+    assert cleaner.df["price"].to_list() == [10, 30, 50]
+    assert cleaner.df["name"].to_list() == ["A", "C", "E"]
 
 
 def test_remove_text_1():

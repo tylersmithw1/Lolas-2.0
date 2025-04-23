@@ -814,3 +814,9 @@ class DataCleaner:
             return value  # Return original value if no match
 
         self.df[column] = self.df[column].apply(convert)
+
+    def price_per_container(self):
+        # Convert the target column to numeric
+        self.df["servingspercontainer_clean"] = self.df["servingspercontainer"].astype(str).str.extract(r'(\d*\.?\d+)').astype(float)
+        self.df["price_per_serving"] = self.df["price"] / self.df["servingspercontainer_clean"]
+        self.df.drop(columns=["servingspercontainer_clean"], inplace=True)

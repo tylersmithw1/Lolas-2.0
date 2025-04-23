@@ -12,6 +12,8 @@ from fastapi.responses import JSONResponse
 import pandas as pd
 import logging
 from models.grocery_search import GrocerySearch
+from models.recommendation import Recommendation
+from services.recommendation_service import RecommendationService
 
 
 app = FastAPI()
@@ -69,4 +71,40 @@ async def create_ranking(query: GrocerySearch, chat_service: chatService = Depen
     except Exception as e:
         print(e)
         raise HTTPException(status_code=400, detail=str(e))
-     
+
+@app.post("/recommendations")
+async def get_recommendations(query: Recommendation, rec_service: RecommendationService = Depends()):
+    try:
+        product_name = query.product_name
+        column_name = query.column_name
+
+        if column_name == "sugar":
+            column_name = "sugar per 100"
+        elif column_name == "calories":
+            column_name = "energykcal per 100"
+        elif column_name == "saturated fat":
+            column_name = "saturatedfat per 100"
+        elif column_name == "sodium":
+            column_name = "salt per 100"
+        elif column_name == "ultraprocessed":
+            column_name = "ultra_processed_flag"
+        elif column_name == "nns":
+            column_name = "nns_flag"
+        
+        response = rec_service.reccomendations_by_column(product_name, column_name)
+
+        ranked_names = response.get("ranking", [])
+        matched = df[df["product"].isin(ranked_names)]
+
+        # Keep the original ranking order
+        ranked_detailed = []
+        for name in ranked_names:
+            product_row = matched[matched["product"] == name]
+            if not product_row.empty:
+                ranked_detailed.append(product_row.iloc[0].to_dict())
+
+        return {"products": ranked_detailed}
+
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=400, detail=str(e))

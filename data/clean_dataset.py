@@ -611,5 +611,7 @@ dc.handle_missing("high_saturated_fat_flag", "drop")
 dc.handle_missing("high_calories_flag", "drop")
 dc.handle_missing("nns_flag", "drop")
 
+dc.price_per_container()
+
 # save file
 dc.save_data("cleaned_data_3.xlsx")

@@ -13,6 +13,7 @@ import pandas as pd
 import logging
 from models.grocery_search import GrocerySearch
 from models.recommendation import Recommendation
+from models.product_name import ProductName
 from services.recommendation_service import RecommendationService
 
 
@@ -108,6 +109,33 @@ async def get_recommendations(query: Recommendation, rec_service: Recommendation
 
         return {"products": ranked_detailed}
 
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/ai-recommendations")
+async def get_ai_recommendations(query: ProductName, rec_service: RecommendationService = Depends()):
+    try:
+        response = rec_service.getRecommendationResponse(query.full_product_name)
+       #logger.info(f"Chatbot raw response: {response}")
+        print(f"Chatbot raw response: {response}")
+        
+    
+        ranked_names = response.get("ranking", [])
+        print(f"ranked names: {ranked_names}")
+        # Match and return full product details from your Excel df
+        matched = df[df["product"].isin(ranked_names)]
+        print(f"matched products: {matched}")
+
+        # Keep the original ranking order
+        ranked_detailed = []
+        for name in ranked_names:
+            product_row = matched[matched["product"] == name]
+            if not product_row.empty:
+                ranked_detailed.append(product_row.iloc[0].to_dict())
+
+        return {"products": ranked_detailed}
     except Exception as e:
         print(e)
         raise HTTPException(status_code=400, detail=str(e))

@@ -12,7 +12,7 @@ import numpy as np
 
 #chatService tests
 @pytest.fixture
-def service():
+def chat_service():
     return chatService()
 
 
@@ -31,31 +31,31 @@ def search_mock_df():
     return pd.DataFrame(data)
 
 
-def test_extract_json_valid(service):
+def test_extract_json_valid(chat_service):
     """test for valid JSON extraction"""
     response = "Here is the ranking: <json> {'ranking': ['Product A', 'Product B', 'Product C']} </json>"
-    result = service.extract_json(response)
+    result = chat_service.extract_json(response)
 
     assert result == {'ranking': ['Product A', 'Product B', 'Product C']}
 
 
-def test_extract_json_invalid(service):
+def test_extract_json_invalid(chat_service):
     """test for invalid JSON extraction"""
     response = "Sandy sells sea shells by the sea shore"
-    result = service.extract_json(response)
+    result = chat_service.extract_json(response)
     assert result is None
 
 
-def test_extract_json_bad_json(service):
+def test_extract_json_bad_json(chat_service):
     """test for invalid JSON format"""
     response = "<json> {'ranking': ['Product A', Product B']} </json>"  # missing a quote around Product B
-    result = service.extract_json(response)
+    result = chat_service.extract_json(response)
     assert result is None
 
 
 @patch("services.chat_service.create_react_agent")
 @patch.object(chatService, 'getBedrockChat')
-def test_get_chat_response(mock_get_chat, mock_create_agent, service):
+def test_get_chat_response(mock_get_chat, mock_create_agent, chat_service):
     """tests for correctly calls agent and parses AI JSON from response."""
     
     # Mock LLM (this will be returned by `getBedrockChat()`)
@@ -78,18 +78,18 @@ def test_get_chat_response(mock_get_chat, mock_create_agent, service):
     mock_create_agent.return_value = mock_agent
 
     # Run the method with the mock data
-    result = service.getChatResponse("Rank the products")
+    result = chat_service.getChatResponse("Rank the products")
 
     # Assert the correct JSON ranking is returned
     assert result == {'ranking': ['Real Good Pepperoni Pizza Snack Bites', 'Pepperoni Pizza Snack Rolls']}  
 
 
 @patch("services.chat_service.ChatBedrockConverse")
-def test_get_bedrock_chat(mock_chat, service):
+def test_get_bedrock_chat(mock_chat, chat_service):
     """tests for returning a ChatBedrockConverse instance with correct params."""
     mock_llm = MagicMock()
     mock_chat.return_value = mock_llm
-    result = service.getBedrockChat()
+    result = chat_service.getBedrockChat()
 
     mock_chat.assert_called_once_with(
         model="amazon.nova-pro-v1:0",
@@ -136,7 +136,7 @@ def test_initial_data_search_partial_match(search_mock_df):
 
 #tests for the recommendation service
 @pytest.fixture
-def recommender():
+def recommender_service():
     return RecommendationService()
 
 
@@ -154,25 +154,25 @@ def recs_mock_df():
     return pd.DataFrame(data)
 
 
-def test_get_closest_product_match_found(recommender, recs_mock_df):
+def test_get_closest_product_match_found(recommender_service, recs_mock_df):
     """test for a close match found"""
     with patch("services.recommendation_service.process.extractOne") as mock_extract:
         mock_extract.return_value = ("A - Pepperoni Pizza", 90, 0)
-        result = recommender.get_closest_product_name("pepperoni", recs_mock_df)
+        result = recommender_service.get_closest_product_name("pepperoni", recs_mock_df)
         assert result == "A - Pepperoni Pizza"
 
-def test_get_closest_product_match_not_found(recommender, recs_mock_df):
+def test_get_closest_product_match_not_found(recommender_service, recs_mock_df):
     """test for no close match found"""
     with patch("services.recommendation_service.process.extractOne") as mock_extract:
         mock_extract.return_value = ("Simulated", 60, 0) #returns value below threshold, so should return None
-        result = recommender.get_closest_product_name("xyz", recs_mock_df)
+        result = recommender_service.get_closest_product_name("xyz", recs_mock_df)
         assert result is None
 
 
 @patch("services.recommendation_service.process.extractOne")
 @patch("services.recommendation_service.TfidfVectorizer")
 @patch("services.recommendation_service.cosine_similarity")
-def test_recommendations_by_column_valid(mock_cosine, mock_vectorizer, mock_extract, recommender, recs_mock_df):
+def test_recommendations_by_column_valid(mock_cosine, mock_vectorizer, mock_extract, recommender_service, recs_mock_df):
     """test for valid recommendations"""
     mock_extract.return_value = ("A - Pepperoni Pizza", 95, 0)
 
@@ -183,7 +183,7 @@ def test_recommendations_by_column_valid(mock_cosine, mock_vectorizer, mock_extr
     mock_cosine.return_value = np.array([[0.9, 0.85, 0.8, 0.03, 0.7]]) #assign similarity scores to the products. 'meat lovers' given a low similarity score here
 
     with patch("services.recommendation_service.DF", recs_mock_df):
-        result = recommender.recomendations_by_column("A - Pepperoni Pizza", "energykcal per 100")
+        result = recommender_service.recomendations_by_column("A - Pepperoni Pizza", "energykcal per 100")
 
     assert isinstance(result, dict)  #make sure returns a dict
     assert "ranking" in result #make sure it has the ranking key
@@ -197,7 +197,7 @@ def test_recommendations_by_column_valid(mock_cosine, mock_vectorizer, mock_extr
 
 
 @patch("services.recommendation_service.process.extractOne")
-def test_recommendations_no_match(mock_extract, recommender):
+def test_recommendations_no_match(mock_extract, recommender_service):
     """test for no match found"""
     mock_extract.return_value = ("X", 40, 0)
     mock_df = pd.DataFrame({
@@ -211,7 +211,47 @@ def test_recommendations_no_match(mock_extract, recommender):
     })
 
     with patch("services.recommendation_service.DF", mock_df):
-        result = recommender.recomendations_by_column("Unknown Product", "energykcal per 100")
+        result = recommender_service.recomendations_by_column("Unknown Product", "energykcal per 100")
         assert result is None
 
+    
 
+@patch("services.recommendation_service.create_react_agent")
+@patch("services.recommendation_service.chatService.getBedrockChat")
+@patch("services.recommendation_service.chatService.extract_json")
+def test_get_recommendation_response(mock_extract_json, mock_get_chat, mock_create_agent, recommender_service):
+    """Tests that RecommendationService correctly calls the agent and parses AI JSON from response."""
+
+    # Mock LLM returned by getBedrockChat
+    mock_llm = MagicMock()
+    mock_get_chat.return_value = mock_llm
+
+    # Mock agent and its invoke response
+    mock_agent = MagicMock()
+    mock_agent.invoke.return_value = {
+        "messages": [
+            HumanMessage(content="Real Good Pepperoni Pizza Snack Bites, 8.5 Oz Box, 8 Count"),
+            AIMessage(content=[
+                {"type": "text", "text": "<thinking> To recommend 5 healthier products..."},
+                {"type": "tool_use", "name": "get_similar_shelf_products", "input": {"product_name": "Real Good Pepperoni Pizza Snack Bites, 8.5 Oz Box, 8 Count"}}
+            ]),
+            AIMessage(content="<thinking> Based on the retrieved data...</thinking>\n\n<json> {'ranking': ['Lean Cuisine Features Supreme Frozen Pizza 6 Oz.', 'Caulipower Cauliflower Pizza Crusts, 2 Pack, 11 Oz (Frozen)', 'Califlour Foods 2 Cauliflower Pizza Crusts, Plain Crust', 'Green Giantâ¢ Cauliflower Pizza Crust Tuscan 7.5 Box', 'Digiorno Pizzeria! Thin Hand-Tossed Crust Margherita Frozen Pizza 18 Oz. Box 18 Oz.']} </json>")
+        ]
+    }
+    mock_create_agent.return_value = mock_agent
+
+    # Patch extract_json to return expected parsed dict
+    expected_result = {
+        'ranking': [
+            'Lean Cuisine Features Supreme Frozen Pizza 6 Oz.',
+            'Caulipower Cauliflower Pizza Crusts, 2 Pack, 11 Oz (Frozen)',
+            'Califlour Foods 2 Cauliflower Pizza Crusts, Plain Crust',
+            'Green Giantâ¢ Cauliflower Pizza Crust Tuscan 7.5 Box',
+            'Digiorno Pizzeria! Thin Hand-Tossed Crust Margherita Frozen Pizza 18 Oz. Box 18 Oz.'
+        ]
+    }
+    mock_extract_json.return_value = expected_result
+
+    # Call the method and assert
+    result = recommender_service.getRecommendationResponse("Real Good Pepperoni Pizza Snack Bites, 8.5 Oz Box, 8 Count")
+    assert result == expected_result

@@ -16,6 +16,7 @@ DF = pd.read_excel(file_path)
 # DF.to_excel("recommendation_products.xlsx", index=False)
 
 
+#products repeat in the dataset, sometimes appearing in different shelves. Here we use the first instance of the product's shelf name. so ultimately, need to find and drop duplicates
 class RecommendationService:
     """Recommendation class."""
     def __init__(self):
@@ -30,7 +31,7 @@ class RecommendationService:
             return match
         return None
 
-    def reccomendations_by_column(self, product_name, column_name):
+    def recomendations_by_column(self, product_name, column_name):
         closest_name = self.get_closest_product_name(product_name, DF)
         if not closest_name:
             print(f"No close match found for product '{product_name}'.")
@@ -72,5 +73,8 @@ class RecommendationService:
         ]
 
         sorted_result = price_filtered_df.sort_values(by=column_name, ascending=True)
+
+        #exclude the original product from the recommednations. if there are duplicates of the of product in the same shelf, it will dorp both
+        sorted_result = sorted_result[sorted_result["product"].str.lower() != product_name.lower()]
 
         return {'ranking': sorted_result["product"].to_list()[:5]}

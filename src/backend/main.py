@@ -91,7 +91,7 @@ async def get_recommendations(query: Recommendation, rec_service: Recommendation
         elif column_name == "nns":
             column_name = "nns_flag"
         
-        response = rec_service.reccomendations_by_column(product_name, column_name)
+        response = rec_service.recomendations_by_column(product_name, column_name)
 
         ranked_names = response.get("ranking", [])
         matched = df[df["product"].isin(ranked_names)]

@@ -53,7 +53,7 @@ class RecommendationService:
         filtered_df["name_similarity"] = similarities
 
         # Keep only those with sufficient similarity
-        name_filtered_df = filtered_df[filtered_df["name_similarity"] >= 0.1]
+        name_filtered_df = filtered_df[filtered_df["name_similarity"] >= 0.05]  #decrease number to increase # of recommendations
 
         ref_price = DF[
             (DF["product"].str.lower() == closest_name.lower()) &
@@ -77,6 +77,10 @@ class RecommendationService:
 
         #exclude the original product from the recommednations. if there are duplicates of the of product in the same shelf, it will dorp both
         sorted_result = sorted_result[sorted_result["product"].str.lower() != product_name.lower()]
-        print({'ranking': sorted_result["product"].to_list()[:5]})
+        # ex = {'ranking': sorted_result[["product", "shelf"]].to_dict(orient='records')[:5]}
+        # print(ex)
 
         return {'ranking': sorted_result["product"].to_list()[:5]}
+
+some = RecommendationService()
+print(some.recomendations_by_column("Real Good Pepperoni Pizza Snack Bites, 8.5 Oz Box, 8 Count", "energykcal per 100"))

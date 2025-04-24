@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardActionArea, CardContent, CardMedia, Typography, Box, IconButton } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 
-function ProductCard({ name, price, image, healthRating }) {
+function ProductCard({ name, price, image, healthRating, serving_size, calories, protein, total_fat, total_carbohydrates, dietary_fiber}) {
   const navigate = useNavigate();
 
   const renderHealthRating = () => {
@@ -30,7 +30,7 @@ function ProductCard({ name, price, image, healthRating }) {
         sx={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}
         onClick={() => {
           navigate(`/product/${encodeURIComponent(name)}`, {
-            state: { name, price, image },
+            state: { name, price, image, serving_size, calories, protein, total_fat, total_carbohydrates, dietary_fiber },
           });
           setTimeout(() => window.scrollTo(0, 0), 0);
         }}

@@ -47,14 +47,6 @@ function ProductDetail() {
     nns: false
   });
   
-  // Hardcoded features for demo - would come from API in real app
-  const productFeatures = [
-    "Non-GMO",
-    "Organic",
-    "Sustainably Sourced",
-    "Gluten Free"
-  ];
-  
   // // Related products - would come from API in real app
   // const relatedProducts = [
   //   { id: 1, name: "Organic Apples", price: 3.99, image: "/images/products/apples.jpg" },
@@ -94,59 +86,52 @@ function ProductDetail() {
 );
 
 
-  useEffect(() => {
-    // If product data was passed via navigation state, use it
-    if (location.state) {
-      setProduct({
-        ...location.state,
-        description: "This premium product is carefully selected for quality and freshness. It's part of our commitment to bringing you the best grocery options to support a healthy lifestyle.",
+useEffect(() => {
+  // If product data was passed via navigation state, use it
+  if (location.state) {
+    console.log(location.state)
+    setProduct({
+      ...location.state,
+    });
+    console.log('here')
+    setLoading(false);
+  } else {
+    // Fetch product details from API
+    const fetchProductDetails = async () => {
+      try {
+        const response = await fetch(`http://127.0.0.1:8000/product-detail/${id}`, {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        });
+        console.log(response);
+        
+        if (!response.ok) throw new Error("Failed to fetch product details");
+        
+        const data = await response.json();
+        console.log(data);
+        setProduct({
+          ...data,
+          description: data.description || "Product description not available",
+          nutrition: data.nutrition || {
+            calories: "Information not available",
+            servingSize: "Information not available",
+            protein: "Information not available",
+            fat: "Information not available",
+            carbs: "Information not available",
+            fiber: "Information not available"
+          }
+        });
+      } catch (error) {
+        console.error("Error fetching product details:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchProductDetails();
+  }
+}, [id, location.state]);
 
-        // this is static/mock data we need to exchange with actual data
-        nutrition: {
-          calories: "120 per serving",
-          servingSize: "100g",
-          protein: "2g",
-          fat: "0.5g",
-          carbs: "25g",
-          fiber: "3g"
-        }
-      });
-      setLoading(false);
-    } else {
-      // Fetch product details from API
-      const fetchProductDetails = async () => {
-        try {
-          const response = await fetch(`http://127.0.0.1:8000/product-detail/${id}`, {
-            method: "GET",
-            headers: { "Content-Type": "application/json" },
-          });
-          
-          if (!response.ok) throw new Error("Failed to fetch product details");
-          
-          const data = await response.json();
-          console.log(data);
-          setProduct({
-            ...data,
-            description: data.description || "Product description not available",
-            nutrition: data.nutrition || {
-              calories: "Information not available",
-              servingSize: "Information not available",
-              protein: "Information not available",
-              fat: "Information not available",
-              carbs: "Information not available",
-              fiber: "Information not available"
-            }
-          });
-        } catch (error) {
-          console.error("Error fetching product details:", error);
-        } finally {
-          setLoading(false);
-        }
-      };
-      
-      fetchProductDetails();
-    }
-  }, [id, location.state]);
   
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
@@ -249,18 +234,6 @@ function ProductDetail() {
             {product.description}
           </Typography>
           
-          {/* Features List */}
-          <List dense>
-            {productFeatures.map((feature, index) => (
-              <ListItem key={index} disablePadding sx={{ py: 0.5 }}>
-                <ListItemIcon sx={{ minWidth: '30px' }}>
-                  <CheckCircleOutlineIcon color="success" fontSize="small" />
-                </ListItemIcon>
-                <ListItemText primary={feature} />
-              </ListItem>
-            ))}
-          </List>
-          
           <Divider sx={{ my: 2 }} />
           
           {/* Quantity Selector */}
@@ -331,37 +304,37 @@ function ProductDetail() {
                 <Grid item xs={12} sm={6}>
                   <Paper variant="outlined" sx={{ p: 2 }}>
                     <Typography variant="subtitle2">Serving Size</Typography>
-                    <Typography variant="body1">{product.nutrition.servingSize}</Typography>
+                    <Typography variant="body1">{product.serving_size}</Typography>
                   </Paper>
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <Paper variant="outlined" sx={{ p: 2 }}>
                     <Typography variant="subtitle2">Calories</Typography>
-                    <Typography variant="body1">{product.nutrition.calories}</Typography>
+                    <Typography variant="body1">{product.calories} cal</Typography>
                   </Paper>
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <Paper variant="outlined" sx={{ p: 2 }}>
                     <Typography variant="subtitle2">Protein</Typography>
-                    <Typography variant="body1">{product.nutrition.protein}</Typography>
+                    <Typography variant="body1">{product.protein} g</Typography>
                   </Paper>
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <Paper variant="outlined" sx={{ p: 2 }}>
                     <Typography variant="subtitle2">Total Fat</Typography>
-                    <Typography variant="body1">{product.nutrition.fat}</Typography>
+                    <Typography variant="body1">{product.total_fat} g</Typography>
                   </Paper>
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <Paper variant="outlined" sx={{ p: 2 }}>
                     <Typography variant="subtitle2">Total Carbohydrates</Typography>
-                    <Typography variant="body1">{product.nutrition.carbs}</Typography>
+                    <Typography variant="body1">{product.total_carbohydrates} g</Typography>
                   </Paper>
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <Paper variant="outlined" sx={{ p: 2 }}>
                     <Typography variant="subtitle2">Dietary Fiber</Typography>
-                    <Typography variant="body1">{product.nutrition.fiber}</Typography>
+                    <Typography variant="body1">{product.dietary_fiber} g</Typography>
                   </Paper>
                 </Grid>
               </Grid>
@@ -385,6 +358,12 @@ function ProductDetail() {
             <ProductCard
               name={product.product || "Unknown Product"}
               price={product.price || 0}
+              protein={product.protein}
+              calories={product.energykcal}
+              dietary_fiber={product.fibre}
+              serving_size={product.servingsize}
+              total_carbohydrates={product.carbohydrates}
+              total_fat={product.fat}
               image={product.image}
               onClick={() =>
                 navigate(`/product/${encodeURIComponent(product.product)}`, {

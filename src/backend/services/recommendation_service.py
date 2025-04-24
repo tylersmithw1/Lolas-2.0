@@ -60,7 +60,7 @@ class RecommendationService:
         filtered_df["name_similarity"] = similarities
 
         # Keep only those with sufficient similarity
-        name_filtered_df = filtered_df[filtered_df["name_similarity"] >= 0.05]  #decrease number to increase # of recommendations
+        name_filtered_df = filtered_df[filtered_df["name_similarity"] >= 0.025]  #decrease number to increase # of recommendations
 
         ref_price = DF[
             (DF["product"].str.lower() == closest_name.lower()) &

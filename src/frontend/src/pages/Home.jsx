@@ -212,10 +212,17 @@ function Home() {
       <Divider sx={{ mb: 3 }} />
       <Grid container spacing={3}>
         {products.map((product, index) => (
+          console.log(product.protein),
           <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
             <ProductCard
               name={product.product || "Unknown Product"}
               price={product.price || 0}
+              protein={product.protein}
+              calories={product.energykcal}
+              dietary_fiber={product.fibre}
+              serving_size={product.servingsize}
+              total_carbohydrates={product.carbohydrates}
+              total_fat={product.fat}
             />
           </Grid>
         ))}

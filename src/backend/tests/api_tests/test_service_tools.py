@@ -176,14 +176,18 @@ def test_recommendations_by_column_valid(mock_cosine, mock_vectorizer, mock_extr
     """test for valid recommendations"""
     mock_extract.return_value = ("A - Pepperoni Pizza", 95, 0)
 
+
     mock_vec_instance = MagicMock()
     mock_vec_instance.transform.return_value = np.array([[1.0], [0.9], [0.8], [0.7], [0.6], [0.5]])
     mock_vectorizer.return_value = mock_vec_instance
 
-    mock_cosine.return_value = np.array([[0.9, 0.85, 0.8, 0.03, 0.7]]) #assign similarity scores to the products. 'meat lovers' given a low similarity score here
+
+    mock_cosine.return_value = np.array([[0.9, 0.85, 0.8, 0.02, 0.7]]) #assign similarity scores to the products. 'meat lovers' given a low similarity score here
+
 
     with patch("services.recommendation_service.DF", recs_mock_df):
         result = recommender_service.recomendations_by_column("A - Pepperoni Pizza", "energykcal per 100")
+
 
     assert isinstance(result, dict)  #make sure returns a dict
     assert "ranking" in result #make sure it has the ranking key

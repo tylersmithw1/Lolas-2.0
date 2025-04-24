@@ -5,7 +5,7 @@ from langchain_aws import ChatBedrockConverse
 from langgraph.prebuilt import create_react_agent
 from langchain_core.messages import SystemMessage
 #from src.backend.tools.tools import *
-from tools.tools import * 
+from tools.tools import initial_data_search
 import ast
 import re
 
@@ -27,7 +27,7 @@ class chatService:
         return llm
 
 
-    PROMPT2 = SystemMessage(
+    PROMPT = SystemMessage(
         content="You are an intelligent and detail-oriented grocery store assistant with a strong focus on nutrition and"
         "healthfulness. Your goal is to help users make informed, health-conscious choices by analyzing product attributes"
         "such as sugar, sodium, calorie content, saturated fat, and degree of processing. You will receive a product name. Use the 'inital_data_search' tool to receive the data of the products you will be ranking." 
@@ -91,7 +91,7 @@ class chatService:
 
     def getChatResponse(self, user_input):
         chat = self.getBedrockChat()
-        agent = create_react_agent(chat, self.TOOLS, state_modifier=self.PROMPT2)
+        agent = create_react_agent(chat, self.TOOLS, state_modifier=self.PROMPT)
         config = {"recursion_limit": self.RECURSION_LIMIT, "timeout": 20*60}
         messages = agent.invoke({"messages": [("user", user_input)]}, config)
         output = messages["messages"]

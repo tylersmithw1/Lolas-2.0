@@ -6,11 +6,12 @@ from unittest.mock import MagicMock
 from main import app
 #from ...src.backend.main import app
 from services.chat_service import chatService
+from services.recommendation_service import RecommendationService
 #from ...src.backend.service import chatService
 client: TestClient = TestClient(app)
 
 
-
+#tests for the /grocery endpoint
 # mock response from chat service when searching 'orange juice'
 mock_response = {
     "ranking": [
@@ -27,14 +28,6 @@ def mock_chat_service():
     mock_service.getChatResponse.return_value = mock_response
     return mock_service
 
-
-# mock chat service which throws an exception
-@pytest.fixture
-def mock_chat_service_exception():
-    class MockChatService:
-        def getChatResponse(self, query):
-            raise ValueError("Simulated chat failure")
-    return MockChatService()
 
 
 def test_create_ranking_success(mock_chat_service):
@@ -114,15 +107,107 @@ def test_create_ranking_exception():
     assert response.status_code == 422
 
 
-def test_create_ranking_chat_fail(mock_chat_service_exception):
-    """testing the /grocery endpoint with a failed chat service response"""
-    # override real dependencies with just the mock chat service for this test
-    app.dependency_overrides[chatService] = lambda: mock_chat_service_exception
-
+def test_create_ranking_chat_fail():
+    class MockChatResponseFailingService:
+        def getChatResponse(self, user_input):
+            raise Exception("Simulated chat failure")
+    
+    app.dependency_overrides[chatService] = lambda: MockChatResponseFailingService()
+    
     response = client.post("/grocery", json={"search_string": "apple juice"})
-
+    
     assert response.status_code == 400
     assert response.json()["detail"] == "Simulated chat failure"
+    
+    # Clean up the dependency override
+    app.dependency_overrides = {}
 
-    # cleanup
+
+#tests for the /recommendations endpoint
+mock_recommendations = {
+    "ranking": [
+        "Kool-Aid Bursts Berry Blue Artificially Flavored Drink, 6 Ct. Package",
+        "Capri Sun Flavored Juice Drink Blend With Other Natural Flavors Variety Pack, 30 Ct. Box",
+        "Apple & Eve 100% Juice, Variety Pack, 6.75 Fl Oz, Pack Of 32"
+    ]
+}
+
+@pytest.fixture
+def mock_rec_service():
+    mock_service = MagicMock(spec=RecommendationService)
+    mock_service.recomendations_by_column.return_value = mock_recommendations
+    return mock_service
+
+
+def test_get_recommendations_success(mock_rec_service):
+    """Test for successful recommendations"""
+    app.dependency_overrides[RecommendationService] = lambda: mock_rec_service
+    
+    # Test the endpoint with valid input
+    response = client.post("/recommendations", json={"product_name": "Some juice product", "column_name": "sugar"})
+    
+    
+    assert response.status_code == 200
+    data = response.json()
+    assert "products" in data
+    assert len(data["products"]) == 3  
+
+    # Check if the product names match the expected result
+    expected_products = mock_recommendations["ranking"]
+    returned_products = [item["product"] for item in data["products"]]
+    assert returned_products == expected_products
+    
+    # Clean up the dependency override
+    app.dependency_overrides = {}
+
+
+def test_get_recommendations_no_match(mock_rec_service):
+    """Test for no close match found"""
+    app.dependency_overrides[RecommendationService] = lambda: mock_rec_service
+    
+    # Mock the service to return no recommendations
+    mock_rec_service.recomendations_by_column.return_value = {"ranking": []}
+    
+    response = client.post("/recommendations", json={"product_name": "Nonexistent Product", "column_name": "sugar"})
+    
+    assert response.status_code == 200
+    data = response.json()
+    assert "products" in data
+    assert len(data["products"]) == 0  # No products returned
+    
+    # Clean up the dependency override
+    app.dependency_overrides = {}
+
+
+def test_get_recommendations_invalid_column(mock_rec_service):
+    """Test for invalid column name (unsupported column)"""
+    app.dependency_overrides[RecommendationService] = lambda: mock_rec_service
+
+    response = client.post("/recommendations", json={
+        "product_name": "A - Pepperoni Pizza",
+        "column_name": "invalid_column"
+    })
+
+    assert response.status_code == 400
+    data = response.json()
+    assert "detail" in data
+    assert "Invalid column name: invalid_column" in data["detail"]
+
+
+    app.dependency_overrides = {}
+
+# mock chat service which throws an exception
+def test_get_recommendations_service_fail():
+    class MockReccomendationFailingService:
+        def recomendations_by_column(self, product_name, column_name):
+            raise Exception("Simulated rec failure")
+    
+    app.dependency_overrides[RecommendationService] = lambda: MockReccomendationFailingService()
+    
+    response = client.post("/recommendations", json={"product_name": "A - Pepperoni Pizza", "column_name": "sugar"})
+    
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Simulated rec failure"
+    
+    # Clean up the dependency override
     app.dependency_overrides = {}

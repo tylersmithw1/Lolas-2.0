@@ -84,6 +84,9 @@ def initial_data_search(
     # Convert matching rows to a DataFrame
     filtered_df = pd.DataFrame(matching_rows)
 
+    if filtered_df.empty:
+        return json.dumps([]) ## Return an empty JSON array if no matches found
+
     # return filtered_df
     if not filtered_df.empty:
         result_json = filtered_df.to_dict(orient="records")  # List of dictionaries

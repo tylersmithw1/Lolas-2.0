@@ -25,6 +25,7 @@ import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
+import ProductCard from "../components/ProductCard";
 
 function ProductDetail() {
   const { id } = useParams();
@@ -43,13 +44,45 @@ function ProductDetail() {
     "Gluten Free"
   ];
   
-  // Related products - would come from API in real app
-  const relatedProducts = [
-    { id: 1, name: "Organic Apples", price: 3.99, image: "/images/products/apples.jpg" },
-    { id: 2, name: "Fresh Strawberries", price: 4.99, image: "/images/products/strawberries.jpg" },
-    { id: 3, name: "Organic Bananas", price: 1.99, image: "/images/products/bananas.jpg" }
-  ];
+  // // Related products - would come from API in real app
+  // const relatedProducts = [
+  //   { id: 1, name: "Organic Apples", price: 3.99, image: "/images/products/apples.jpg" },
+  //   { id: 2, name: "Fresh Strawberries", price: 4.99, image: "/images/products/strawberries.jpg" },
+  //   { id: 3, name: "Organic Bananas", price: 1.99, image: "/images/products/bananas.jpg" }
+  // ];
   
+  const [relatedProducts, setRelatedProducts] = useState([]);
+
+  useEffect(() => {
+    const fetchRelatedProducts = async () => {
+      try {
+        const response = await fetch("http://localhost:8000/recommendations", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            product_name: product.name,
+            column_name: "sugar",
+          })
+        });
+
+        if (!response.ok) throw new Error("Failed to fetch recommendations!");
+        const data = await response.json();
+        console.log(data)
+
+        setRelatedProducts(data.products)
+
+      } catch (error) {
+        console.error("Error fetching related products:", error);
+      }
+    };
+
+    if (product) {
+      fetchRelatedProducts();
+    }
+  }, [product, "sugar"]
+);
+
+
   useEffect(() => {
     // If product data was passed via navigation state, use it
     if (location.state) {
@@ -80,6 +113,7 @@ function ProductDetail() {
           if (!response.ok) throw new Error("Failed to fetch product details");
           
           const data = await response.json();
+          console.log(data);
           setProduct({
             ...data,
             description: data.description || "Product description not available",
@@ -334,51 +368,26 @@ function ProductDetail() {
       </Box>
       
       {/* Related Products Section */}
-      <Box sx={{ mt: 6 }}>
-        <Typography variant="h5" component="h2" gutterBottom sx={{ fontFamily: 'Garamond, serif' }}>
-          You May Also Like
-        </Typography>
-        <Grid container spacing={3}>
-          {relatedProducts.map((item) => (
-            <Grid item xs={12} sm={6} md={4} key={item.id}>
-              <Card 
-                sx={{ 
-                  height: '100%', 
-                  display: 'flex', 
-                  flexDirection: 'column',
-                  cursor: 'pointer',
-                  transition: '0.3s',
-                  '&:hover': {
-                    transform: 'translateY(-4px)',
-                    boxShadow: 3
-                  }
-                }}
-                onClick={() => navigate(`/product/${encodeURIComponent(item.name)}`, { 
-                  state: { name: item.name, price: item.price, image: item.image } 
-                })}
-              >
-                <CardMedia
-                  component="div"
-                  sx={{
-                    paddingTop: '100%', // 1:1 aspect ratio
-                    backgroundSize: 'cover'
-                  }}
-                  image={item.image}
-                  title={item.name}
-                />
-                <Box sx={{ p: 2 }}>
-                  <Typography variant="subtitle1" component="h3">
-                    {item.name}
-                  </Typography>
-                  <Typography variant="h6" color="primary" sx={{ fontWeight: 'bold' }}>
-                    ${item.price.toFixed(2)}
-                  </Typography>
-                </Box>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-      </Box>
+      <Grid container spacing={3}>
+        {relatedProducts.map((product, index) => (
+          <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
+            <ProductCard
+              name={product.product || "Unknown Product"}
+              price={product.price || 0}
+              image={product.image}
+              onClick={() =>
+                navigate(`/product/${encodeURIComponent(product.product)}`, {
+                  state: {
+                    name: product.product,
+                    price: product.price,
+                    image: product.image,
+                  },
+                })
+              }
+            />
+          </Grid>
+        ))}
+      </Grid>
     </Container>
   );
 }

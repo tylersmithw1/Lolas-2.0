@@ -28,7 +28,14 @@ function ProductCard({ name, price, image, healthRating }) {
     <Card sx={{ width: 220, height: 300, borderRadius: 2, overflow: 'hidden', boxShadow: 2, position: 'relative' }}>
       <CardActionArea
         sx={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}
-        onClick={() => navigate(`/product/${encodeURIComponent(name)}`, { state: { name, price } })}
+        onClick={() => {
+          navigate(`/product/${encodeURIComponent(name)}`, {
+            state: { name, price, image },
+          });
+          setTimeout(() => window.scrollTo(0, 0), 0);
+        }}
+        
+        
       >
         <CardMedia
           component="img"

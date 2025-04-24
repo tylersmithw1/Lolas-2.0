@@ -9,10 +9,9 @@ import json
 
 BASE_DIR = os.path.dirname(
     os.path.abspath(__file__)
-)  # Directory of tools.py (same as main.py)
+)  
 file_path = os.path.join(BASE_DIR, "clean_ai_products.xlsx")  # Full path to the Excel file
-
-df = pd.read_excel(file_path)
+search_df = pd.read_excel(file_path)
 # df.drop(
 #         [
 #             "price",
@@ -49,7 +48,7 @@ df = pd.read_excel(file_path)
 
 @tool
 def initial_data_search(
-    query, df=df, threshold=95
+    query, df=search_df, threshold=95
 ):
     """Use this tool to retrieve the immediate food data relating to the user's search term."""
 
@@ -102,3 +101,48 @@ def initial_data_search(
 
 
 #print(initial_data_search.invoke("Ice Mountain Brand 100% Natural Spring Water, 16.9-Ounce Bottles (Pack Of 32)"))
+
+BASE_DIR = os.path.dirname(
+    os.path.abspath(__file__)
+)  # Directory of tools.py (same as main.py)
+file_path2 = os.path.join(BASE_DIR, "rec_products.xlsx")  # Full path to the Excel file
+rec_df = pd.read_excel(file_path2)
+#print(rec_df.head(5))
+
+@tool
+def get_similar_shelf_products(product_name, df=rec_df, threshold=80):
+    """Use this tool to retrieve similar products from the same shelf."""
+
+    # Step 1: Fuzzy match to get closest product name
+    product_list = df["product"].tolist()
+    match, score = process.extractOne(
+        product_name, product_list, scorer=fuzz.token_sort_ratio
+    )
+    if score < threshold:
+        print(f"No close match found for product '{product_name}'.")
+        return json.dumps([])
+
+    # Step 2: Get the shelf value for the matched product
+    shelf_value = df.loc[df["product"] == match, "shelf"].values[0]
+    print(f"Closest product name: {match}, Shelf: {shelf_value}")
+
+    # Step 3: Filter DataFrame by shelf
+    matching_rows = df[df["shelf"] == shelf_value]
+
+    # Convert matching rows to a DataFrame
+    filtered_df = pd.DataFrame(matching_rows)
+
+    if filtered_df.empty:
+        return json.dumps([])  # Return an empty JSON array if no matches found
+    
+    # return filtered_df
+    if not filtered_df.empty:
+        result_json = filtered_df.to_dict(orient="records")  # List of dictionaries
+        try:
+            json_str = json.dumps(result_json)  # Try to serialize the result to JSON
+        except TypeError as e:
+            print(f"Serialization error: {e}")
+            print(f"Problematic row: {matching_rows[0]}")
+        return json_str
+    
+#print(get_similar_shelf_products.invoke(("Real Good Pepperoni Pizza Snack Bites, 8.5 Oz Box, 8 Count")))

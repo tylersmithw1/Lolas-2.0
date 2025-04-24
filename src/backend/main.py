@@ -77,6 +77,8 @@ async def get_recommendations(query: Recommendation, rec_service: Recommendation
     try:
         product_name = query.product_name
         column_name = query.column_name
+        print(f"product name: {product_name}")
+        print(f"column name: {column_name}")
 
         if column_name == "sugar":
             column_name = "sugar per 100"

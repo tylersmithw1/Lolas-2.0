@@ -38,6 +38,7 @@ class RecommendationService:
             return None
 
         shelf_value = DF.loc[DF["product"] == closest_name, "shelf"].values[0]
+        print(f"Closest product name: {closest_name}, Shelf: {shelf_value}")
 
         filtered_df = DF[DF["shelf"] == shelf_value].copy()
 
@@ -76,5 +77,6 @@ class RecommendationService:
 
         #exclude the original product from the recommednations. if there are duplicates of the of product in the same shelf, it will dorp both
         sorted_result = sorted_result[sorted_result["product"].str.lower() != product_name.lower()]
+        print({'ranking': sorted_result["product"].to_list()[:5]})
 
         return {'ranking': sorted_result["product"].to_list()[:5]}

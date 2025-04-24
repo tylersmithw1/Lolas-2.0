@@ -26,6 +26,8 @@ import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import ProductCard from "../components/ProductCard";
+import FilterDrawer from "../components/FilterDrawer";
+
 
 function ProductDetail() {
   const { id } = useParams();
@@ -35,6 +37,15 @@ function ProductDetail() {
   const [loading, setLoading] = useState(true);
   const [tabValue, setTabValue] = useState(0);
   const [quantity, setQuantity] = useState(1);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [selectedFilters, setSelectedFilters] = useState({
+    sugar: false,
+    calories: false,
+    "saturated fat": false,
+    "salt per 100": false,
+    ultraprocessed: false,
+    nns: false
+  });
   
   // Hardcoded features for demo - would come from API in real app
   const productFeatures = [

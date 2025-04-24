@@ -72,6 +72,7 @@ async def create_ranking(query: GrocerySearch, chat_service: chatService = Depen
         print(e)
         raise HTTPException(status_code=400, detail=str(e))
 
+
 @app.post("/recommendations")
 async def get_recommendations(query: Recommendation, rec_service: RecommendationService = Depends()):
     try:
@@ -80,18 +81,18 @@ async def get_recommendations(query: Recommendation, rec_service: Recommendation
         print(f"product name: {product_name}")
         print(f"column name: {column_name}")
 
-        if column_name == "sugar":
-            column_name = "sugar per 100"
-        elif column_name == "calories":
-            column_name = "energykcal per 100"
-        elif column_name == "saturated fat":
-            column_name = "saturatedfat per 100"
-        elif column_name == "sodium":
-            column_name = "salt per 100"
-        elif column_name == "ultraprocessed":
-            column_name = "ultra_processed_flag"
-        elif column_name == "nns":
-            column_name = "nns_flag"
+        column_map = {
+        "sugar": "sugar per 100",
+        "calories": "energykcal per 100",
+        "saturated fat": "saturatedfat per 100",
+        "sodium": "salt per 100",
+        "ultraprocessed": "ultra_processed_flag",
+        "nns": "nns_flag"}
+
+        if column_name not in column_map:
+            raise HTTPException(status_code=400, detail=f"Invalid column name: {column_name}")
+
+        column_name = column_map[column_name]
         
         response = rec_service.recomendations_by_column(product_name, column_name)
 

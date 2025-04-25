@@ -7,11 +7,11 @@ import os
 import json
 
 
-BASE_DIR = os.path.dirname(
-    os.path.abspath(__file__)
-)  
-file_path = os.path.join(BASE_DIR, "clean_ai_products.xlsx")  # Full path to the Excel file
-search_df = pd.read_excel(file_path)
+#--starts here---this is for dropping columns and creating a new excel file with only the columns the chat service ai agent needs to use
+# BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# file_path = os.path.join(BASE_DIR, "cleaned_data_4.xlsx")
+# df = pd.read_excel(file_path)
+
 # df.drop(
 #         [
 #             "price",
@@ -43,13 +43,18 @@ search_df = pd.read_excel(file_path)
 #         axis=1,
 #         inplace=True,
 #     )
-# df.to_excel("clean_ai_products.xlsx", index=False)
+# df.to_excel("ai_products_clean.xlsx", index=False)
+#---ends here---
+
+BASE_DIR = os.path.dirname(
+    os.path.abspath(__file__)
+)  
+file_path = os.path.join(BASE_DIR, "ai_products_clean.xlsx")  # Full path to the ai Excel file
+chat_service_df = pd.read_excel(file_path)
 
 
 @tool
-def initial_data_search(
-    query, df=search_df, threshold=95
-):
+def initial_data_search(query, df=chat_service_df, threshold=95):
     """Use this tool to retrieve the immediate food data relating to the user's search term."""
 
     for column in df.select_dtypes(include=["object"]).columns:
@@ -100,17 +105,61 @@ def initial_data_search(
     # return []
 
 
-#print(initial_data_search.invoke("Ice Mountain Brand 100% Natural Spring Water, 16.9-Ounce Bottles (Pack Of 32)"))
+# #print(initial_data_search.invoke("Ice Mountain Brand 100% Natural Spring Water, 16.9-Ounce Bottles (Pack Of 32)"))
 
-BASE_DIR = os.path.dirname(
-    os.path.abspath(__file__)
-)  # Directory of tools.py (same as main.py)
-file_path2 = os.path.join(BASE_DIR, "rec_products.xlsx")  # Full path to the Excel file
-rec_df = pd.read_excel(file_path2)
-#print(rec_df.head(5))
+##--starts here---this is for dropping columns and creating a new excel file with only the columns the recommendation ai agent needs to use
+# BASE_DIR = os.path.dirname(os.path.abspath(__file__))  
+# file_path2 = os.path.join(BASE_DIR, "with_price.xlsx")  #with price is an excel sheet that has all the cleaning PLUS the price per serving column added to it
+#it's deleted in this repo, but to find how its made or recreate it, if you go to clean_dataset.py, uncomment 'dc.price_per_container()'
+# df2 = pd.read_excel(file_path2)
+
+# df2.drop(
+#         [
+#             "department",
+#             "aisle",
+#             "price",
+#             "servingspercontainer",
+#             "servingsize",
+#             "energykcal",
+#             "fat",
+#             "saturatedfat",
+#             "transfat",
+#             "carbohydrates",
+#             "sugar",
+#             "salt",
+#             "fibre",
+#             "protein",
+#             "ingredients",
+#             "image",
+#             "redmeat",
+#             "shelfrank",
+#             "packsize",
+#             "packunit",
+#             "protein per 100",
+#             "fibre per 100",
+#             "carbohydrates per 100",
+#             "transfat per 100",
+#             "fat per 100",
+#             "high_sugar_flag",
+#             "high_sodium_flag",
+#             "high_saturated_fat_flag",
+#             "high_calories_flag",
+
+#         ],
+#         axis=1,
+#         inplace=True,
+#     )
+# df2.to_excel("recs_ai_products.xlsx", index=False)
+
+
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))  
+file_path2 = os.path.join(BASE_DIR, "recs_ai_products.xlsx")  # Full path to the recs_ai Excel file
+recs_service_df = pd.read_excel(file_path2)
+
 
 @tool
-def get_similar_shelf_products(product_name, df=rec_df, threshold=80):
+def get_similar_shelf_products(product_name, df=recs_service_df, threshold=80):
     """Use this tool to retrieve similar products from the same shelf."""
 
     # Step 1: Fuzzy match to get closest product name
@@ -145,4 +194,6 @@ def get_similar_shelf_products(product_name, df=rec_df, threshold=80):
             print(f"Problematic row: {matching_rows[0]}")
         return json_str
     
-#print(get_similar_shelf_products.invoke(("Real Good Pepperoni Pizza Snack Bites, 8.5 Oz Box, 8 Count")))
+# #print(get_similar_shelf_products.invoke(("Real Good Pepperoni Pizza Snack Bites, 8.5 Oz Box, 8 Count")))
+
+

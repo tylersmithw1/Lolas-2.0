@@ -18,10 +18,7 @@ import ast
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))  
 file_path = os.path.join(BASE_DIR, "recommendation_products.xlsx")  # Full path to the Excel file
 
-DF = pd.read_excel(file_path)
-# DF.drop(["department", "aisle", "price", "servingspercontainer", "servingsize", "energykcal", "fat", "saturatedfat", "transfat", "carbohydrates", "sugar", "salt", "fibre", "protein", "ingredients", "redmeat", "shelfrank", "packsize", "packunit", "image", "fat per 100", "transfat per 100", "carbohydrates per 100", "fibre per 100", "protein per 100", "high_sugar_flag", "high_sodium_flag", "high_saturated_fat_flag", "high_calories_flag", ], axis=1, inplace=True)
-# DF.to_excel("recommendation_products.xlsx", index=False)
-
+REC_DF = pd.read_excel(file_path)
 
 #products repeat in the dataset, sometimes appearing in different shelves. Here we use the first instance of the product's shelf name. so ultimately, need to find and drop duplicates
 class RecommendationService:
@@ -39,15 +36,15 @@ class RecommendationService:
         return None
 
     def recomendations_by_column(self, product_name, column_name):
-        closest_name = self.get_closest_product_name(product_name, DF)
+        closest_name = self.get_closest_product_name(product_name, REC_DF)
         if not closest_name:
             print(f"No close match found for product '{product_name}'.")
             return None
 
-        shelf_value = DF.loc[DF["product"] == closest_name, "shelf"].values[0]
+        shelf_value = REC_DF.loc[REC_DF["product"] == closest_name, "shelf"].values[0]
         print(f"Closest product name: {closest_name}, Shelf: {shelf_value}")
 
-        filtered_df = DF[DF["shelf"] == shelf_value].copy()
+        filtered_df = REC_DF[REC_DF["shelf"] == shelf_value].copy()
 
         names = filtered_df["product"].tolist()
         vectorizer = TfidfVectorizer().fit([closest_name] + names)
@@ -62,9 +59,9 @@ class RecommendationService:
         # Keep only those with sufficient similarity
         name_filtered_df = filtered_df[filtered_df["name_similarity"] >= 0.025]  #decrease number to increase # of recommendations
 
-        ref_price = DF[
-            (DF["product"].str.lower() == closest_name.lower()) &
-            (DF["shelf"].str.lower() == shelf_value.lower())
+        ref_price = REC_DF[
+            (REC_DF["product"].str.lower() == closest_name.lower()) &
+            (REC_DF["shelf"].str.lower() == shelf_value.lower())
         ]["price_per_serving"]
 
         if ref_price.empty:

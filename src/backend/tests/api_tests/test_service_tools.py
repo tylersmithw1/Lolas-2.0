@@ -185,7 +185,7 @@ def test_recommendations_by_column_valid(mock_cosine, mock_vectorizer, mock_extr
     mock_cosine.return_value = np.array([[0.9, 0.85, 0.8, 0.02, 0.7]]) #assign similarity scores to the products. 'meat lovers' given a low similarity score here
 
 
-    with patch("services.recommendation_service.DF", recs_mock_df):
+    with patch("services.recommendation_service.REC_DF", recs_mock_df):
         result = recommender_service.recomendations_by_column("A - Pepperoni Pizza", "energykcal per 100")
 
 
@@ -201,7 +201,7 @@ def test_recommendations_by_column_valid(mock_cosine, mock_vectorizer, mock_extr
 
 
 @patch("services.recommendation_service.process.extractOne")
-def test_recommendations_no_match(mock_extract, recommender_service):
+def test_recommendations_by_column_no_match(mock_extract, recommender_service):
     """test for no match found"""
     mock_extract.return_value = ("X", 40, 0)
     mock_df = pd.DataFrame({
@@ -214,7 +214,7 @@ def test_recommendations_no_match(mock_extract, recommender_service):
         "energykcal per 100": [250, 200, 230, 280, 240],
     })
 
-    with patch("services.recommendation_service.DF", mock_df):
+    with patch("services.recommendation_service.REC_DF", mock_df):
         result = recommender_service.recomendations_by_column("Unknown Product", "energykcal per 100")
         assert result is None
 
@@ -223,7 +223,7 @@ def test_recommendations_no_match(mock_extract, recommender_service):
 @patch("services.recommendation_service.create_react_agent")
 @patch("services.recommendation_service.chatService.getBedrockChat")
 @patch("services.recommendation_service.chatService.extract_json")
-def test_get_recommendation_response(mock_extract_json, mock_get_chat, mock_create_agent, recommender_service):
+def test_ai_recommendations_response(mock_extract_json, mock_get_chat, mock_create_agent, recommender_service):
     """Tests that RecommendationService correctly calls the agent and parses AI JSON from response."""
 
     # Mock LLM returned by getBedrockChat

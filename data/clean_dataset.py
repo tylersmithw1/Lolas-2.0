@@ -1,8 +1,12 @@
 """Script to sub sample data."""
 
 from data_cleaner import DataCleaner
+import os
 
-dc: DataCleaner = DataCleaner("products_updated.xlsx")
+current_dir = os.path.dirname(os.path.abspath(__file__))
+file_path = os.path.join(current_dir, "products_updated.xlsx")
+dc: DataCleaner = DataCleaner(file_path)
+# dc: DataCleaner = DataCleaner("products_updated.xlsx")
 
 dc.drop("updated")
 
@@ -416,7 +420,7 @@ high_sugar_ingredients = [
     "YACON",
     "MALT",
 ]
-dc.flag_high_sugar("ingredients", "sugar", "aisle", high_sugar_ingredients)
+dc.flag_high_sugar("ingredients", "sugar per 100", "aisle", high_sugar_ingredients)
 
 
 # high sodium
@@ -428,7 +432,7 @@ high_sodium_ingredients = [
     "SLAT",
     "SODIUM CHLORIDE",
 ]
-dc.flag_high_sodium("ingredients", "salt", "aisle", high_sodium_ingredients)
+dc.flag_high_sodium("ingredients", "salt per 100", "aisle", high_sodium_ingredients)
 
 # high saturated fat
 high_saturated_fat_ingredients = [
@@ -457,12 +461,12 @@ high_saturated_fat_ingredients = [
     "MEDIUM CHAIN TRIGLYCERIDES",
 ]
 dc.flag_high_saturated_fat(
-    "ingredients", "saturatedfat", "aisle", high_saturated_fat_ingredients
+    "ingredients", "saturatedfat per 100", "aisle", high_saturated_fat_ingredients
 )
 
 
 # high calorie
-dc.flag_high_calories("energykcal", "aisle")
+dc.flag_high_calories("energykcal per 100", "aisle")
 
 
 # nns

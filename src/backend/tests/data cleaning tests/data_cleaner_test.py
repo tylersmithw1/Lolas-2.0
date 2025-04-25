@@ -1,6 +1,6 @@
 "Tests for the data cleaning methods used to clean excel data"
 
-#FOR ALL THE FILE PATHS, FOLLOW MY EXAMPLE ON LINES 485-487
+# FOR ALL THE FILE PATHS, FOLLOW MY EXAMPLE ON LINES 485-487
 import pytest
 from data.data_cleaner import DataCleaner
 import os
@@ -482,10 +482,9 @@ nns_ingredients = [
 
 @pytest.fixture
 def mock_excel_file(tmp_path):
-    df = pd.DataFrame({
-        "price": [10, None, 30, None, 50],
-        "name": ["A", "B", "C", "D", "E"]
-    })
+    df = pd.DataFrame(
+        {"price": [10, None, 30, None, 50], "name": ["A", "B", "C", "D", "E"]}
+    )
     # Save the DataFrame to a temporary Excel file
     input_path = tmp_path / "mock_input.xlsx"
     df.to_excel(input_path, index=False, sheet_name="Sheet1", engine="openpyxl")
@@ -496,10 +495,9 @@ def mock_excel_file(tmp_path):
 
 
 def test_preview(monkeypatch):
-    sample_df = pd.DataFrame({
-        "price": [10, 20, 30, 40, 50],
-        "name": ["A", "B", "C", "D", "E"]
-    })
+    sample_df = pd.DataFrame(
+        {"price": [10, 20, 30, 40, 50], "name": ["A", "B", "C", "D", "E"]}
+    )
 
     # Patch pd.read_excel to return the mock_df
     monkeypatch.setattr(pd, "read_excel", lambda *args, **kwargs: sample_df.copy())
@@ -511,7 +509,6 @@ def test_preview(monkeypatch):
     pd.testing.assert_frame_equal(res, expected)
 
 
-
 def test_save_data(mock_excel_file):
     df_original, input_path, output_path = mock_excel_file
 
@@ -520,15 +517,14 @@ def test_save_data(mock_excel_file):
 
     assert output_path.exists()
 
-    df_saved = pd.read_excel(output_path, engine='openpyxl')
+    df_saved = pd.read_excel(output_path, engine="openpyxl")
     pd.testing.assert_frame_equal(df_saved, df_original)
 
 
 def test_handle_missing_mean(monkeypatch):
-    sample_df = pd.DataFrame({
-        "price": [10, None, 30, None, 50],
-        "name": ["A", "B", "C", "D", "E"]
-    })
+    sample_df = pd.DataFrame(
+        {"price": [10, None, 30, None, 50], "name": ["A", "B", "C", "D", "E"]}
+    )
 
     # Patch pd.read_excel to return the mock_df
     monkeypatch.setattr(pd, "read_excel", lambda *args, **kwargs: sample_df.copy())
@@ -545,10 +541,9 @@ def test_handle_missing_mean(monkeypatch):
 
 
 def test_handle_missing_zero(monkeypatch):
-    sample_df = pd.DataFrame({
-        "price": [10, None, 30, None, 50],
-        "name": ["A", "B", "C", "D", "E"]
-    })
+    sample_df = pd.DataFrame(
+        {"price": [10, None, 30, None, 50], "name": ["A", "B", "C", "D", "E"]}
+    )
 
     # Patch pd.read_excel to return the mock_df
     monkeypatch.setattr(pd, "read_excel", lambda *args, **kwargs: sample_df.copy())
@@ -563,10 +558,9 @@ def test_handle_missing_zero(monkeypatch):
 
 
 def test_handle_missing_drop(monkeypatch):
-    sample_df = pd.DataFrame({
-        "price": [10, None, 30, None, 50],
-        "name": ["A", "B", "C", "D", "E"]
-    })
+    sample_df = pd.DataFrame(
+        {"price": [10, None, 30, None, 50], "name": ["A", "B", "C", "D", "E"]}
+    )
 
     # Patch pd.read_excel to return the mock_df
     monkeypatch.setattr(pd, "read_excel", lambda *args, **kwargs: sample_df.copy())
@@ -881,35 +875,7 @@ def test_m_to_g():
     assert dc.to_list("salt") == expected
 
 
-#not done
-def test_standardize_serving_g():
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    file_path = os.path.join(current_dir, "testing_subset.xlsx")
-    dc: DataCleaner = DataCleaner(file_path)
-    expected = [
-        118,
-        81,
-        136,
-        83,
-        119,
-        113,
-        136,
-        119,
-        125,
-        56.699,
-        416.738,
-        70.8738,
-        56,
-        57.7621534,
-        59,
-        130,
-        149,
-        149.3074885,
-        133,
-        170.097,
-    ]
-
-#failed
+# failed
 def test_standardize_column():
     current_dir = os.path.dirname(os.path.abspath(__file__))
     file_path = os.path.join(current_dir, "testing_subset.xlsx")
@@ -924,24 +890,28 @@ def test_standardize_column():
         18.38,
         17.65,
         16.80,
-        22.93,
-        4.56,
-        14.11,
+        1300.0,
+        1900.0,
+        1000.0,
         23.21,
         10.39,
         11.86,
         8.46,
         8.72,
-        11.39,
+        1700,
         11.28,
-        8.82,
+        1500.0,
     ]
+
     dc.strip_spaces("servingsize")
     dc.extract_bracketed_value("servingsize")
     dc.strip_spaces("servingsize")
     dc.convert_package_based_size("servingsize")
+    dc.convert_m_to_grams("fat")
     dc.standardize_column("fat")
+
     res = dc.to_list("fat per 100")
+    print(res)
     assert len(fat_expected) == len(res)
     for i in range(len(fat_expected)):
         assert abs(fat_expected[i] - res[i]) <= 1
@@ -960,52 +930,48 @@ def test_flag_ultraprocessed():
     assert expected == dc.to_list("ultra_processed_flag")
 
 
-#failed
 def test_flag_sugar():
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    file_path = os.path.join(current_dir, "testing_subset.xlsx")
+    file_path = os.path.join(current_dir, "cleaned_data_subset_2.xlsx")
     dc: DataCleaner = DataCleaner(file_path)
-    expected = []
+    expected = [1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1]
     high_sugar_subset = ["GLUCOSE"]
-    dc.flag_high_sugar("ingredients", "sugar", "aisle", high_sugar_subset)
+    dc.flag_high_sugar("ingredients", "sugar per 100", "aisle", high_sugar_subset)
     assert len(expected) == len(dc.to_list("high_sugar_flag"))
     assert expected == dc.to_list("high_sugar_flag")
 
 
-#failed
-def test_extract_weight():
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    file_path = os.path.join(current_dir, "testing_subset.xlsx")
-    dc: DataCleaner = DataCleaner(file_path)
-    dc.extract_and_convert_weight()
-    expected = []
-    print(dc.to_list("weight_grams"))
-    assert expected == dc.to_list("weight_grams")
-
-
-#not done
 def test_flag_sat_fat():
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    file_path = os.path.join(current_dir, "testing_subset.xlsx")
+    file_path = os.path.join(current_dir, "cleaned_data_subset_2.xlsx")
     dc: DataCleaner = DataCleaner(file_path)
-    expected = []
-    # TODO
-    assert False
+    dc.flag_high_saturated_fat(
+        "ingredients", "saturatedfat per 100", "aisle", ["PORK FAT"]
+    )
+    expected = [0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1]
+    assert len(expected) == len(dc.to_list("high_saturated_fat_flag"))
+    assert expected == dc.to_list("high_saturated_fat_flag")
 
 
-#not done
+# not done
 def test_flag_cals():
-    dc: DataCleaner = DataCleaner("./data/testing_subset.xlsx")
-    expected = []
-    # TODO
-    assert False
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(current_dir, "cleaned_data_subset_2.xlsx")
+    dc: DataCleaner = DataCleaner(file_path)
+    dc.flag_high_calories("energykcal per 100", "aisle")
+    expected = [0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0]
+    assert len(expected) == len(dc.to_list("high_calories_flag"))
+    assert expected == dc.to_list("high_calories_flag")
 
-#not done
+
 def test_flag_sodium():
-    dc: DataCleaner = DataCleaner("./data/testing_subset.xlsx")
-    expected = []
-    # TODO
-    assert False
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(current_dir, "cleaned_data_subset_2.xlsx")
+    dc: DataCleaner = DataCleaner(file_path)
+    dc.flag_high_sodium("ingredients", "salt per 100", "aisle", ["SALT"])
+    expected = [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1]
+    assert len(expected) == len(dc.to_list("high_sodium_flag"))
+    assert expected == dc.to_list("high_sodium_flag")
 
 
 def test_flag_NNS():

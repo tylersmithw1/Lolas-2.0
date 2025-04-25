@@ -82,7 +82,9 @@ class DataCleaner:
             if isinstance(value, str):
                 # Extract only numeric parts (including decimal)
                 match = re.search(r"(\d+\.?\d*)", value)
-                return float(match.group(1)) if match else None  # Convert to float or None
+                return (
+                    float(match.group(1)) if match else None
+                )  # Convert to float or None
             return value  # Keep existing numeric values
 
         # Apply the cleaning function and convert to float
@@ -250,6 +252,7 @@ class DataCleaner:
         Pre-process the bracketed values by ignoring (s) or (es) before extracting other values in parentheses.
         This method modifies the "column" by cleaning values like 'tablet(s)' to 'tablets'.
         """
+
         def clean(value):
             if isinstance(value, str):
                 # Remove only (s) or (es) at the end of a word
@@ -289,7 +292,7 @@ class DataCleaner:
             "pod": "10 g",
             "packet": "3.3 g",
             "tea bag": "8 fl oz",
-            "teabag": "8 fl oz"
+            "teabag": "8 fl oz",
         }
 
         def convert(value):
@@ -299,7 +302,9 @@ class DataCleaner:
                 # Regex to match cases like "1 K-Cup" or "1.0 tea bag"
                 match = re.match(r"(\d*\.?\d*)?\s*([\w\s-]+)", value_lower)
                 if match:
-                    quantity = float(match.group(1)) if match.group(1) else 1  # Default to 1 if missing
+                    quantity = (
+                        float(match.group(1)) if match.group(1) else 1
+                    )  # Default to 1 if missing
                     unit = match.group(2).strip().lower()
 
                     # Iterate through the unit mapping to find a match
@@ -308,13 +313,17 @@ class DataCleaner:
                             base_value = unit_mapping[key]
 
                             # Extract numeric part from mapping
-                            base_match = re.match(r"(\d*\.?\d*)\s*([a-zA-Z\s]+)", base_value)
+                            base_match = re.match(
+                                r"(\d*\.?\d*)\s*([a-zA-Z\s]+)", base_value
+                            )
                             if base_match:
                                 base_quantity = float(base_match.group(1))
                                 base_unit = base_match.group(2).strip()
 
                                 # Convert value by scaling quantity
-                                converted_value = f"{int(quantity * base_quantity)} {base_unit}"
+                                converted_value = (
+                                    f"{int(quantity * base_quantity)} {base_unit}"
+                                )
                                 return converted_value
 
             return value  # Return original value if no match found
@@ -614,11 +623,15 @@ class DataCleaner:
         def check_high_sodium(row):
             # Get ingredient list, sodium content, and product aisle
             ingredient_list = row[ingredients_column]
-            total_sodium_g = row[sodium_column]  # Sodium is in grams
+            # total_sodium_g = row[sodium_column]
+            # Ensure that sodium is casted to numeric instead of string
+            total_sodium_g = pd.to_numeric(row[sodium_column], errors="coerce")
             product_aisle = row[product_aisle_column]
 
             # Convert sodium from grams to mg
-            total_sodium_mg = total_sodium_g * 1000 if pd.notna(total_sodium_g) else 0
+            total_sodium_mg: int = (
+                total_sodium_g * 1000 if pd.notna(total_sodium_g) else 0
+            )
 
             # Determine if the product is a beverage (if "beverage" or "tea" is in the product aisle)
             is_beverage = isinstance(product_aisle, str) and any(
@@ -626,12 +639,12 @@ class DataCleaner:
             )
 
             # Set sodium threshold based on food vs. beverage
-            high_sodium_threshold = (
+            high_sodium_threshold: int = (
                 100 if is_beverage else 400
             )  # 100 mg/100ml for beverages, 400 mg/100g for food
 
             # Check if sodium content exceeds the threshold
-            exceeds_sodium_limit = (
+            exceeds_sodium_limit: bool = (
                 total_sodium_mg >= high_sodium_threshold
                 if pd.notna(total_sodium_mg)
                 else False
@@ -752,8 +765,18 @@ class DataCleaner:
         self.df = self.df[self.df[column].isna()]
 
     def standardize_nutrient_columns(self):
-        nutrient_columns = ['energykcal', 'fat', 'saturatedfat', 'transfat', 'carbohydrates', 'sugar', 'salt', 'fibre', 'protein']
-        columns_per_100 = [f'{col} per 100' for col in nutrient_columns]
+        nutrient_columns = [
+            "energykcal",
+            "fat",
+            "saturatedfat",
+            "transfat",
+            "carbohydrates",
+            "sugar",
+            "salt",
+            "fibre",
+            "protein",
+        ]
+        columns_per_100 = [f"{col} per 100" for col in nutrient_columns]
         self.df.loc[self.df[nutrient_columns].sum(axis=1) == 0, columns_per_100] = 0
 
     def extract_serving_from_product(self, product_value):
@@ -762,7 +785,11 @@ class DataCleaner:
         """
         if isinstance(product_value, str):
             # Improved regex to capture more variations of units
-            match = re.search(r"(\d*\.?\d+)\s*(fl\.?\s*oz|fluid ounce|oz|ml|quart|liter|g|kg|tablet|scoop|cup|bag|bottle)", product_value, re.IGNORECASE)
+            match = re.search(
+                r"(\d*\.?\d+)\s*(fl\.?\s*oz|fluid ounce|oz|ml|quart|liter|g|kg|tablet|scoop|cup|bag|bottle)",
+                product_value,
+                re.IGNORECASE,
+            )
             if match:
                 return f"{match.group(1)} {match.group(2).replace('fluid ounce', 'fl oz').replace('liter', 'l').replace('kg', 'g')}"  # Normalize units
         return None  # No match found
@@ -772,12 +799,18 @@ class DataCleaner:
         Fills missing serving sizes using product column if available.
         """
         self.df[serving_size_column] = self.df[serving_size_column].apply(
-            lambda x: x if pd.notna(x) else self.extract_serving_from_product(self.df[product_column])
+            lambda x: (
+                x
+                if pd.notna(x)
+                else self.extract_serving_from_product(self.df[product_column])
+            )
         )
 
     def convert_tsp_to_g(self, column):
         def convert(value):
-            match = re.search(r"([\d\.]+)\s*(?:tsp|teaspoon|tsp.)", str(value), re.IGNORECASE)
+            match = re.search(
+                r"([\d\.]+)\s*(?:tsp|teaspoon|tsp.)", str(value), re.IGNORECASE
+            )
             if match:
                 tsp = float(match.group(1))
                 return f"{tsp * 5.69} g"
@@ -787,7 +820,11 @@ class DataCleaner:
 
     def convert_l_to_ml(self, column):
         def convert(value):
-            match = re.search(r"([\d\.]+)\s*(?:l|liter|liter.|liters|liters.|l.|L|L.)", str(value), re.IGNORECASE)
+            match = re.search(
+                r"([\d\.]+)\s*(?:l|liter|liter.|liters|liters.|l.|L|L.)",
+                str(value),
+                re.IGNORECASE,
+            )
             if match:
                 l = float(match.group(1))
                 return f"{l * 1000} ml"
@@ -807,7 +844,11 @@ class DataCleaner:
 
     def convert_weird_g(self, column):
         def convert(value):
-            match = re.search(r"([\d\.]+)\s*(?:g mix|gram|g without shells)", str(value), re.IGNORECASE)
+            match = re.search(
+                r"([\d\.]+)\s*(?:g mix|gram|g without shells)",
+                str(value),
+                re.IGNORECASE,
+            )
             if match:
                 val = float(match.group(1))
                 return f"{val} g"
@@ -817,6 +858,13 @@ class DataCleaner:
 
     def price_per_container(self):
         # Convert the target column to numeric
-        self.df["servingspercontainer_clean"] = self.df["servingspercontainer"].astype(str).str.extract(r'(\d*\.?\d+)').astype(float)
-        self.df["price_per_serving"] = self.df["price"] / self.df["servingspercontainer_clean"]
+        self.df["servingspercontainer_clean"] = (
+            self.df["servingspercontainer"]
+            .astype(str)
+            .str.extract(r"(\d*\.?\d+)")
+            .astype(float)
+        )
+        self.df["price_per_serving"] = (
+            self.df["price"] / self.df["servingspercontainer_clean"]
+        )
         self.df.drop(columns=["servingspercontainer_clean"], inplace=True)

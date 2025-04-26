@@ -26,7 +26,6 @@ import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import ProductCard from "../components/ProductCard";
-import FilterDrawer from "../components/FilterDrawer";
 
 
 function ProductDetail() {
@@ -37,24 +36,11 @@ function ProductDetail() {
   const [loading, setLoading] = useState(true);
   const [tabValue, setTabValue] = useState(0);
   const [quantity, setQuantity] = useState(1);
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [selectedFilters, setSelectedFilters] = useState({
-    sugar: false,
-    calories: false,
-    "saturated fat": false,
-    "salt per 100": false,
-    ultraprocessed: false,
-    nns: false
-  });
-  
-  // // Related products - would come from API in real app
-  // const relatedProducts = [
-  //   { id: 1, name: "Organic Apples", price: 3.99, image: "/images/products/apples.jpg" },
-  //   { id: 2, name: "Fresh Strawberries", price: 4.99, image: "/images/products/strawberries.jpg" },
-  //   { id: 3, name: "Organic Bananas", price: 1.99, image: "/images/products/bananas.jpg" }
-  // ];
-  
   const [relatedProducts, setRelatedProducts] = useState([]);
+  const [aiRecs, setAIRecs] = useState([])
+  const [relatedLoaded, setRelatedLoaded] = useState(false);
+  const [aiLoaded, setAiLoaded] = useState(false);
+
 
   useEffect(() => {
     const fetchRelatedProducts = async () => {
@@ -67,70 +53,98 @@ function ProductDetail() {
             column_name: "sugar",
           })
         });
-
+  
         if (!response.ok) throw new Error("Failed to fetch recommendations!");
         const data = await response.json();
-        console.log(data)
-
-        setRelatedProducts(data.products)
-
+        console.log(data);
+  
+        setRelatedProducts(data.products);
+        setRelatedLoaded(data.products.length > 0);
+  
       } catch (error) {
         console.error("Error fetching related products:", error);
       }
     };
-
+  
     if (product) {
       fetchRelatedProducts();
     }
-  }, [product, "sugar"]
-);
-
-
-useEffect(() => {
-  // If product data was passed via navigation state, use it
-  if (location.state) {
-    console.log(location.state)
-    setProduct({
-      ...location.state,
-    });
-    console.log('here')
-    setLoading(false);
-  } else {
-    // Fetch product details from API
-    const fetchProductDetails = async () => {
+  }, [product]);
+  
+  useEffect(() => {
+    const fetchAIRecs = async () => {
       try {
-        const response = await fetch(`http://127.0.0.1:8000/product-detail/${id}`, {
-          method: "GET",
+        const response = await fetch("http://localhost:8000/ai-recommendations", {
+          method: "POST",
           headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            full_product_name: product.name
+          })
         });
-        console.log(response);
-        
-        if (!response.ok) throw new Error("Failed to fetch product details");
-        
+  
+        if (!response.ok) throw new Error("Failed to fetch ai recommendations!");
         const data = await response.json();
         console.log(data);
-        setProduct({
-          ...data,
-          description: data.description || "Product description not available",
-          nutrition: data.nutrition || {
-            calories: "Information not available",
-            servingSize: "Information not available",
-            protein: "Information not available",
-            fat: "Information not available",
-            carbs: "Information not available",
-            fiber: "Information not available"
-          }
-        });
+  
+        setAIRecs(data.products);
+        setAiLoaded(data.products.length > 0);
+  
       } catch (error) {
-        console.error("Error fetching product details:", error);
-      } finally {
-        setLoading(false);
+        console.error("Error fetching ai recommendations:", error);
       }
     };
-    
-    fetchProductDetails();
-  }
-}, [id, location.state]);
+  
+    if (product) {
+      fetchAIRecs();
+    }
+  }, [product]);
+  
+
+  useEffect(() => {
+    // If product data was passed via navigation state, use it
+    if (location.state) {
+      console.log(location.state)
+      setProduct({
+        ...location.state,
+      });
+      console.log('here')
+      setLoading(false);
+    } else {
+      // Fetch product details from API
+      const fetchProductDetails = async () => {
+        try {
+          const response = await fetch(`http://127.0.0.1:8000/product-detail/${id}`, {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+          });
+          console.log(response);
+          
+          if (!response.ok) throw new Error("Failed to fetch product details");
+          
+          const data = await response.json();
+          console.log(data);
+          setProduct({
+            ...data,
+            description: data.description || "Product description not available",
+            nutrition: data.nutrition || {
+              calories: "Information not available",
+              servingSize: "Information not available",
+              protein: "Information not available",
+              fat: "Information not available",
+              carbs: "Information not available",
+              fiber: "Information not available"
+            }
+          });
+        } catch (error) {
+          console.error("Error fetching product details:", error);
+        } finally {
+          setLoading(false);
+        }
+      };
+      
+      fetchProductDetails();
+    }
+  }, [id, location.state]);
 
   
   const handleTabChange = (event, newValue) => {
@@ -350,34 +364,80 @@ useEffect(() => {
           )}
         </Box>
       </Box>
+
+      <Divider sx={{ my: 4 }} />
       
-      {/* Related Products Section */}
-      <Grid container spacing={3}>
-        {relatedProducts.map((product, index) => (
-          <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
-            <ProductCard
-              name={product.product || "Unknown Product"}
-              price={product.price || 0}
-              protein={product.protein}
-              calories={product.energykcal}
-              dietary_fiber={product.fibre}
-              serving_size={product.servingsize}
-              total_carbohydrates={product.carbohydrates}
-              total_fat={product.fat}
-              image={product.image}
-              onClick={() =>
-                navigate(`/product/${encodeURIComponent(product.product)}`, {
-                  state: {
-                    name: product.product,
-                    price: product.price,
-                    image: product.image,
-                  },
-                })
-              }
-            />
-          </Grid>
-        ))}
-      </Grid>
+      {/* AI - Related Products Section */}
+      {aiLoaded && relatedLoaded ? (
+        <>
+        <Typography variant="h5" gutterBottom>
+          AI Recommendations
+        </Typography>
+        <Divider sx={{ my: 4 }} />
+        <Grid container spacing={3}>
+          {aiRecs.map((product, index) => (
+            <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
+              <ProductCard
+                name={product.product || "Unknown Product"}
+                price={product.price || 0}
+                protein={product.protein}
+                calories={product.energykcal}
+                dietary_fiber={product.fibre}
+                serving_size={product.servingsize}
+                total_carbohydrates={product.carbohydrates}
+                total_fat={product.fat}
+                image={product.image}
+                onClick={() =>
+                  navigate(`/product/${encodeURIComponent(product.product)}`, {
+                    state: {
+                      name: product.product,
+                      price: product.price,
+                      image: product.image,
+                    },
+                  })
+                }
+              />
+            </Grid>
+          ))}
+        </Grid>
+
+        <Divider sx={{ my: 4 }} />
+
+        
+        {/* Manual - Related Products Section */}
+        <Typography variant="h5" gutterBottom>
+          Low Sugar Recommendations
+        </Typography>
+        <Divider sx={{ my: 4 }} />
+        <Grid container spacing={3}>
+          {relatedProducts.map((product, index) => (
+            <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
+              <ProductCard
+                name={product.product || "Unknown Product"}
+                price={product.price || 0}
+                protein={product.protein}
+                calories={product.energykcal}
+                dietary_fiber={product.fibre}
+                serving_size={product.servingsize}
+                total_carbohydrates={product.carbohydrates}
+                total_fat={product.fat}
+                image={product.image}
+                onClick={() =>
+                  navigate(`/product/${encodeURIComponent(product.product)}`, {
+                    state: {
+                      name: product.product,
+                      price: product.price,
+                      image: product.image,
+                    },
+                  })
+                }
+              />
+            </Grid>
+          ))}
+        </Grid>
+        </>
+      ) : (<Typography variant="body1">Loading recommendations...</Typography>)
+    }
     </Container>
   );
 }

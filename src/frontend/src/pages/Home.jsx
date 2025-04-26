@@ -216,6 +216,7 @@ function Home() {
           <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
             <ProductCard
               name={product.product || "Unknown Product"}
+              image={`/images/${product.image}`}
               price={product.price || 0}
               protein={product.protein}
               calories={product.energykcal}

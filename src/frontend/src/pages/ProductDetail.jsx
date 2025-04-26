@@ -418,7 +418,7 @@ function ProductDetail() {
                 serving_size={product.servingsize}
                 total_carbohydrates={product.carbohydrates}
                 total_fat={product.fat}
-                image={product.image}
+                image={`/images/${product.image}`}
                 onClick={() =>
                   navigate(`/product/${encodeURIComponent(product.product)}`, {
                     state: {
@@ -453,7 +453,7 @@ function ProductDetail() {
                 serving_size={product.servingsize}
                 total_carbohydrates={product.carbohydrates}
                 total_fat={product.fat}
-                image={product.image}
+                image={`/images/${product.image}`}
                 onClick={() =>
                   navigate(`/product/${encodeURIComponent(product.product)}`, {
                     state: {

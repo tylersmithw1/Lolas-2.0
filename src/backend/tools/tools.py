@@ -110,7 +110,7 @@ rec_df = pd.read_excel(file_path2)
 #print(rec_df.head(5))
 
 @tool
-def get_similar_shelf_products(product_name, df=rec_df, threshold=80):
+def get_similar_shelf_products(product_name, df=rec_df, threshold=50): # decrease threshold for more recs
     """Use this tool to retrieve similar products from the same shelf."""
 
     # Step 1: Fuzzy match to get closest product name

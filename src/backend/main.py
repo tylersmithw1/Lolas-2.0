@@ -118,8 +118,9 @@ async def get_recommendations(query: Recommendation, rec_service: Recommendation
 @app.post("/ai-recommendations")
 async def get_ai_recommendations(query: ProductName, rec_service: RecommendationService = Depends()):
     try:
+        print(f"product name: {query.full_product_name}")
         response = rec_service.getRecommendationResponse(query.full_product_name)
-       #logger.info(f"Chatbot raw response: {response}")
+        #logger.info(f"Chatbot raw response: {response}")
         print(f"Chatbot raw response: {response}")
         
     

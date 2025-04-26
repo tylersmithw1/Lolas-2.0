@@ -19,7 +19,9 @@ import {
   ListItemIcon, 
   ListItemText,
   TextField,
-  IconButton
+  IconButton,
+  Radio,
+  FormControlLabel
 } from '@mui/material';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import AddIcon from '@mui/icons-material/Add';
@@ -40,6 +42,9 @@ function ProductDetail() {
   const [aiRecs, setAIRecs] = useState([])
   const [relatedLoaded, setRelatedLoaded] = useState(false);
   const [aiLoaded, setAiLoaded] = useState(false);
+  const [selectedFilter, setSelectedFilter] = useState("sugar"); // defaults to low sugar rec
+
+  const options = ["sugar", "calories", "saturated fat", "sodium", "ultraprocessed", "nns"];
 
 
   useEffect(() => {
@@ -50,7 +55,7 @@ function ProductDetail() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             product_name: product.name,
-            column_name: "sugar",
+            column_name: selectedFilter,
           })
         });
   
@@ -66,10 +71,10 @@ function ProductDetail() {
       }
     };
   
-    if (product) {
+    if (product && selectedFilter) {
       fetchRelatedProducts();
     }
-  }, [product]);
+  }, [product, selectedFilter]);
   
   useEffect(() => {
     const fetchAIRecs = async () => {
@@ -166,6 +171,10 @@ function ProductDetail() {
     if (quantity > 1) {
       setQuantity(prevQuantity => prevQuantity - 1);
     }
+  };
+
+  const handleFilterChange = (event) => {
+    setSelectedFilter(event.target.value);
   };
   
   if (loading) {
@@ -366,6 +375,29 @@ function ProductDetail() {
       </Box>
 
       <Divider sx={{ my: 4 }} />
+
+      {/* Filter Section */}
+      <Box sx={{ my: 3 }}>
+        <Typography variant="h6" gutterBottom>Select an option to tailor your recommendations:</Typography>
+        <List>
+          {options.map(option => (
+            <ListItem key={option}>
+              <FormControlLabel
+                control={
+                  <Radio
+                    checked={selectedFilter === option}
+                    onChange={handleFilterChange}
+                    value={option}
+                  />
+                }
+                label={option}
+              />
+            </ListItem>
+          ))}
+        </List>
+      </Box>
+
+      <Divider sx={{ my: 4 }} />
       
       {/* AI - Related Products Section */}
       {aiLoaded && relatedLoaded ? (
@@ -406,7 +438,7 @@ function ProductDetail() {
         
         {/* Manual - Related Products Section */}
         <Typography variant="h5" gutterBottom>
-          Low Sugar Recommendations
+          Low {selectedFilter} Recommendations
         </Typography>
         <Divider sx={{ my: 4 }} />
         <Grid container spacing={3}>

@@ -87,7 +87,7 @@ class RecommendationService:
         # ex = {'ranking': sorted_result[["product", "shelf"]].to_dict(orient='records')[:5]}
         # print(ex)
 
-        return {'ranking': sorted_result["product"].to_list()[:5]}
+        return {'ranking': sorted_result["product"].to_list()[:4]}
 
     
     CHAT_SERVICE = chatService()
@@ -111,9 +111,9 @@ class RecommendationService:
 
         "5) Combine both the numeric values and binary flags to generate a ranked list of products from most healthful to least healthful. Do your best to combine these standards to optimize the ranking and thus your recommendations."
 
-        "6) Always return only 5 recommendations, essentially; the top 5 from your ranking."
+        "6) Always return only 4 recommendations, essentially; the top 4 from your ranking."
 
-        "7) Ultimately, you are making and returning a healthful ranking of 5 recommendations using the semantics of the product name, within 20 percent of the product price, and using the numeric values and binary flags of nutrition attriutes to rank the products from most healthful to least healthful."
+        "7) Ultimately, you are making and returning a healthful ranking of 4 recommendations using the semantics of the product name, within 20 percent of the product price, and using the numeric values and binary flags of nutrition attriutes to rank the products from most healthful to least healthful."
         
         "8) Return the result of your ranking in a JSON format with the following exact structure: Make sure to include the <json> tags in your output. "
         "For example: 'Here is the recommendation: <json> {'ranking': ['Product Name 1', 'Product Name 2', 'Product Name 3']} </json>. Do not give insight into your thinking process," 

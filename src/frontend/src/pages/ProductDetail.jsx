@@ -438,7 +438,7 @@ function ProductDetail() {
         
         {/* Manual - Related Products Section */}
         <Typography variant="h5" gutterBottom>
-          Low {selectedFilter} Recommendations
+          Tailored Recommendations by {selectedFilter == 'nns' ? 'NNS' : selectedFilter == 'sugar' ? 'Low Sugar' : selectedFilter == 'calories' ? 'Low Calories' : selectedFilter == 'saturated fat' ? 'Low Saturated Fat' : selectedFilter == 'sodium' ? 'Low Sodium' : selectedFilter == 'ultraprocessed' ? 'Non-Ultraprocessed' : ''}
         </Typography>
         <Divider sx={{ my: 4 }} />
         <Grid container spacing={3}>

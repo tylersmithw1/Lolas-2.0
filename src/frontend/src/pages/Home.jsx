@@ -18,7 +18,8 @@ import {
   FormGroup, 
   Divider, 
   InputAdornment,
-  CardActionArea
+  CardActionArea,
+  CircularProgress
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import FilterListIcon from '@mui/icons-material/FilterList';
@@ -27,7 +28,6 @@ import ProductCard from "../components/ProductCard";
 
 function Home() {
   const [products, setProducts] = useState([]);
-  // filter 
   const [searchQuery, setSearchQuery] = useState("");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [allProducts, setAllProducts] = useState([]);
@@ -38,8 +38,9 @@ function Home() {
     nonGMO: false,
     lowSodium: false
   });
+  const [noProductFound, setNoProductFound] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  //categories
   const categories = [
     { name: "Fruits & Vegetables", image: "/images/categories/fruits-vegetables.jpg" },
     { name: "Dairy & Eggs", image: "/images/categories/dairy-eggs.jpg" },
@@ -47,13 +48,12 @@ function Home() {
     { name: "Pantry Staples", image: "/images/categories/pantry.jpg" },
     { name: "Beverages", image: "/images/categories/beverages.jpg" },
     { name: "Snacks", image: "/images/categories/snacks.jpg" }
-  ];
+  ];  
 
-  const [noProductFound, setNoProductFound] = useState(false);
-
-  // Fetch products when search query is submitted
   const fetchProducts = async (query) => {
     try {
+      setIsLoading(true); 
+
       const response = await fetch("http://localhost:8000/grocery", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -64,17 +64,14 @@ function Home() {
         setProducts([]);
         setAllProducts([]);
         setNoProductFound(true);
+        setIsLoading(false); 
         return;
       }
 
       if (!response.ok) throw new Error("Failed to fetch");
-      
-
 
       const data = await response.json();
-
       const productList = data.products || [];
-
 
       if (productList.length === 0) {
         setNoProductFound(true);
@@ -82,19 +79,16 @@ function Home() {
         setNoProductFound(false);
       }
 
-      console.log(data)
-      //setProducts(data.products || []);  // Update the state directly
-      //setAllProducts(data.products || []);
-      setNoProductFound(false);
-
-    setProducts(productList);
-    setAllProducts(productList);
+      setProducts(productList);
+      setAllProducts(productList);
+      setIsLoading(false); 
 
     } catch (error) {
       console.error("Error fetching products:", error);
       setNoProductFound(true);
       setProducts([]);
-    setAllProducts([]);
+      setAllProducts([]);
+      setIsLoading(false); 
     }
   };
 
@@ -114,7 +108,6 @@ function Home() {
     setIsFilterOpen(!isFilterOpen);
   };
 
-
   return (
     <Box sx={{ flexGrow: 1 }}>
       {/* Navigation and Search Bar */}
@@ -123,7 +116,7 @@ function Home() {
           <Typography variant="h6" component="div" sx={{ flexGrow: 1, fontFamily: 'Garamond, serif', fontWeight: 'bold' }}>
             Lola's Grocery
           </Typography>
-          
+
           <Box component="form" onSubmit={handleSearchSubmit} sx={{ display: 'flex', alignItems: 'center' }}>
             <TextField
               variant="outlined"
@@ -198,40 +191,60 @@ function Home() {
 
       {/* Main Content */}
       <Container maxWidth="lg" sx={{ mt: 4 }}>
-  {noProductFound ? (
-    <Box>
-      <Typography variant="h4" gutterBottom>
-        No product found for '{searchQuery}'
-      </Typography>
-    </Box>
-  ) : products.length > 0 ? (
-    <Box>
-      <Typography variant="h4" gutterBottom>
-        Healthiest Options for '{searchQuery}'
-      </Typography>
-      <Divider sx={{ mb: 3 }} />
-      <Grid container spacing={3}>
-        {products.map((product, index) => (
-          console.log(product.protein),
-          <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
-            <ProductCard
-              name={product.product || "Unknown Product"}
-              image={`/images/${product.image}`}
-              price={product.price || 0}
-              protein={product.protein}
-              calories={product.energykcal}
-              dietary_fiber={product.fibre}
-              serving_size={product.servingsize}
-              total_carbohydrates={product.carbohydrates}
-              total_fat={product.fat}
-            />
-          </Grid>
-        ))}
-      </Grid>
-    </Box>
-        ) : (
-          /* Homepage Content */
+        {isLoading ? (
+          // Loading spinner
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+            <CircularProgress size={200} />
+          </Box>
+        ) : noProductFound ? (
+          <Box textAlign="center" mt={8}>
+            <Typography variant="h4" gutterBottom>
+              No products found for '{searchQuery}'
+            </Typography>
+            <Typography variant="body1" gutterBottom>
+              Please try searching again.
+            </Typography>
+            <Button 
+              variant="contained" 
+              sx={{ mt: 2, backgroundColor: '#4a7c59', '&:hover': { backgroundColor: '#3a6349' } }}
+              onClick={() => {
+                setSearchQuery('');
+                setProducts([]);
+                setAllProducts([]);
+                setNoProductFound(false);
+                window.location.href = '/';
+              }}
+            >
+              Back to Home
+            </Button>
+          </Box>
+        ) : products.length > 0 ? (
           <Box>
+            <Typography variant="h4" gutterBottom>
+              Healthiest Options for '{searchQuery}'
+            </Typography>
+            <Divider sx={{ mb: 3 }} />
+            <Grid container spacing={3}>
+              {products.map((product, index) => (
+                <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
+                  <ProductCard
+                    name={product.product || "Unknown Product"}
+                    image={`/images/${product.image}`}
+                    price={product.price || 0}
+                    protein={product.protein}
+                    calories={product.energykcal}
+                    dietary_fiber={product.fibre}
+                    serving_size={product.servingsize}
+                    total_carbohydrates={product.carbohydrates}
+                    total_fat={product.fat}
+                  />
+                </Grid>
+              ))}
+            </Grid>
+          </Box>
+        ) : (
+          <Box>
+            {/* Homepage Content */}
             {/* Hero Section */}
             <Box 
               sx={{ 
@@ -312,6 +325,5 @@ function Home() {
     </Box>
   );
 }
-
 
 export default Home;

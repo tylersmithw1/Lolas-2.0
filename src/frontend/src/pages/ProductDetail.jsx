@@ -89,7 +89,6 @@ function ProductDetail() {
   
         if (!response.ok) throw new Error("Failed to fetch ai recommendations!");
         const data = await response.json();
-        console.log(data);
   
         setAIRecs(data.products);
         setAiLoaded(data.products.length > 0);
@@ -112,7 +111,6 @@ function ProductDetail() {
       setProduct({
         ...location.state,
       });
-      console.log('here')
       setLoading(false);
     } else {
       // Fetch product details from API
@@ -122,12 +120,10 @@ function ProductDetail() {
             method: "GET",
             headers: { "Content-Type": "application/json" },
           });
-          console.log(response);
           
           if (!response.ok) throw new Error("Failed to fetch product details");
           
           const data = await response.json();
-          console.log(data);
           setProduct({
             ...data,
             description: data.description || "Product description not available",
@@ -360,6 +356,18 @@ function ProductDetail() {
                     <Typography variant="body1">{product.dietary_fiber} g</Typography>
                   </Paper>
                 </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Paper variant="outlined" sx={{ p: 2 }}>
+                    <Typography variant="subtitle2">Sugar</Typography>
+                    <Typography variant="body1">{product.sugar} g</Typography>
+                  </Paper>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Paper variant="outlined" sx={{ p: 2 }}>
+                    <Typography variant="subtitle2">Sodium</Typography>
+                    <Typography variant="body1">{product.sodium} g</Typography>
+                  </Paper>
+                </Grid>
               </Grid>
             </Box>
           )}
@@ -418,6 +426,8 @@ function ProductDetail() {
                 serving_size={product.servingsize}
                 total_carbohydrates={product.carbohydrates}
                 total_fat={product.fat}
+                sugar={product.sugar}
+                sodium={product.salt}
                 image={`/images/${product.image}`}
                 onClick={() =>
                   navigate(`/product/${encodeURIComponent(product.product)}`, {
@@ -453,6 +463,8 @@ function ProductDetail() {
                 serving_size={product.servingsize}
                 total_carbohydrates={product.carbohydrates}
                 total_fat={product.fat}
+                sugar={product.sugar}
+                sodium={product.salt}
                 image={`/images/${product.image}`}
                 onClick={() =>
                   navigate(`/product/${encodeURIComponent(product.product)}`, {

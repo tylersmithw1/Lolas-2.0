@@ -159,7 +159,7 @@ recs_service_df = pd.read_excel(file_path2)
 
 
 @tool
-def get_similar_shelf_products(product_name, df=recs_service_df, threshold=80):
+def get_similar_shelf_products(product_name, df=recs_service_df, threshold=50):
     """Use this tool to retrieve similar products from the same shelf."""
 
     # Step 1: Fuzzy match to get closest product name
@@ -195,5 +195,3 @@ def get_similar_shelf_products(product_name, df=recs_service_df, threshold=80):
         return json_str
     
 # #print(get_similar_shelf_products.invoke(("Real Good Pepperoni Pizza Snack Bites, 8.5 Oz Box, 8 Count")))
-
-

@@ -19,14 +19,20 @@ import {
   ListItemIcon, 
   ListItemText,
   TextField,
-  IconButton
+  IconButton,
+  Radio,
+  FormControlLabel,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle
 } from '@mui/material';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import ProductCard from "../components/ProductCard";
-import FilterDrawer from "../components/FilterDrawer";
 
 
 function ProductDetail() {
@@ -37,24 +43,15 @@ function ProductDetail() {
   const [loading, setLoading] = useState(true);
   const [tabValue, setTabValue] = useState(0);
   const [quantity, setQuantity] = useState(1);
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [selectedFilters, setSelectedFilters] = useState({
-    sugar: false,
-    calories: false,
-    "saturated fat": false,
-    "salt per 100": false,
-    ultraprocessed: false,
-    nns: false
-  });
-  
-  // // Related products - would come from API in real app
-  // const relatedProducts = [
-  //   { id: 1, name: "Organic Apples", price: 3.99, image: "/images/products/apples.jpg" },
-  //   { id: 2, name: "Fresh Strawberries", price: 4.99, image: "/images/products/strawberries.jpg" },
-  //   { id: 3, name: "Organic Bananas", price: 1.99, image: "/images/products/bananas.jpg" }
-  // ];
-  
   const [relatedProducts, setRelatedProducts] = useState([]);
+  const [aiRecs, setAIRecs] = useState([])
+  const [relatedLoaded, setRelatedLoaded] = useState(false);
+  const [aiLoaded, setAiLoaded] = useState(false);
+  const [selectedFilter, setSelectedFilter] = useState("sugar"); // defaults to low sugar rec
+  const [openDialog, setOpenDialog] = useState(false);
+
+  const options = ["sugar", "calories", "saturated fat", "sodium", "ultraprocessed", "nns"];
+
 
   useEffect(() => {
     const fetchRelatedProducts = async () => {
@@ -64,73 +61,102 @@ function ProductDetail() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             product_name: product.name,
-            column_name: "sugar",
+            column_name: selectedFilter,
           })
         });
-
+  
         if (!response.ok) throw new Error("Failed to fetch recommendations!");
         const data = await response.json();
-        console.log(data)
-
-        setRelatedProducts(data.products)
-
+        console.log(data);
+  
+        setRelatedProducts(data.products);
+        setRelatedLoaded(data.products.length > 0);
+        setLoading(false);
+  
       } catch (error) {
         console.error("Error fetching related products:", error);
       }
     };
-
-    if (product) {
+  
+    if (product && selectedFilter) {
       fetchRelatedProducts();
     }
-  }, [product, "sugar"]
-);
-
-
-useEffect(() => {
-  // If product data was passed via navigation state, use it
-  if (location.state) {
-    console.log(location.state)
-    setProduct({
-      ...location.state,
-    });
-    console.log('here')
-    setLoading(false);
-  } else {
-    // Fetch product details from API
-    const fetchProductDetails = async () => {
+  }, [product, selectedFilter]);
+  
+  useEffect(() => {
+    const fetchAIRecs = async () => {
       try {
-        const response = await fetch(`http://127.0.0.1:8000/product-detail/${id}`, {
-          method: "GET",
+        const response = await fetch("http://localhost:8000/ai-recommendations", {
+          method: "POST",
           headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            full_product_name: product.name
+          })
         });
-        console.log(response);
-        
-        if (!response.ok) throw new Error("Failed to fetch product details");
-        
+  
+        if (!response.ok) throw new Error("Failed to fetch ai recommendations!");
         const data = await response.json();
-        console.log(data);
-        setProduct({
-          ...data,
-          description: data.description || "Product description not available",
-          nutrition: data.nutrition || {
-            calories: "Information not available",
-            servingSize: "Information not available",
-            protein: "Information not available",
-            fat: "Information not available",
-            carbs: "Information not available",
-            fiber: "Information not available"
-          }
-        });
-      } catch (error) {
-        console.error("Error fetching product details:", error);
-      } finally {
+  
+        setAIRecs(data.products);
+        setAiLoaded(data.products.length > 0);
         setLoading(false);
+  
+      } catch (error) {
+        console.error("Error fetching ai recommendations:", error);
       }
     };
-    
-    fetchProductDetails();
-  }
-}, [id, location.state]);
+  
+    if (product) {
+      fetchAIRecs();
+    }
+  }, [product]);
+  
+
+  useEffect(() => {
+    setLoading(true);
+    setRelatedLoaded(false);
+    setAiLoaded(false);
+
+    // If product data was passed via navigation state, use it
+    if (location.state) {
+      console.log(location.state)
+      setProduct({
+        ...location.state,
+      });
+    } else {
+      // Fetch product details from API
+      const fetchProductDetails = async () => {
+        try {
+          const response = await fetch(`http://127.0.0.1:8000/product-detail/${id}`, {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+          });
+          
+          if (!response.ok) throw new Error("Failed to fetch product details");
+          
+          const data = await response.json();
+          setProduct({
+            ...data,
+            description: data.description || "Product description not available",
+            nutrition: data.nutrition || {
+              calories: "Information not available",
+              servingSize: "Information not available",
+              protein: "Information not available",
+              fat: "Information not available",
+              carbs: "Information not available",
+              fiber: "Information not available"
+            }
+          });
+        } catch (error) {
+          console.error("Error fetching product details:", error);
+        } finally {
+          setLoading(false);
+        }
+      };
+      
+      fetchProductDetails();
+    }
+  }, [id, location.state]);
 
   
   const handleTabChange = (event, newValue) => {
@@ -153,14 +179,44 @@ useEffect(() => {
       setQuantity(prevQuantity => prevQuantity - 1);
     }
   };
+
+  const handleFilterChange = (event) => {
+    setSelectedFilter(event.target.value);
+  };
+
+  const handleOpenDialog = () => {
+    setOpenDialog(true);
+  };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+  };
+
+  const switchProductsWhenLoaded = (product) => {
+    if (!relatedLoaded || !aiLoaded) {
+      handleOpenDialog();
+    } else {
+      navigate(`/product/${encodeURIComponent(product.product)}`, {
+        state: {
+          name: product.product,
+          price: product.price,
+          image: product.image,
+        },
+      });
+    }
+  };
   
-  if (loading) {
-    return (
-      <Container sx={{ py: 8, textAlign: 'center' }}>
-        <Typography variant="h5">Loading product details...</Typography>
-      </Container>
-    );
-  }
+  
+  // if (loading) {
+  //   return (
+  //     <Container sx={{ py: 8, textAlign: 'center' }}>
+  //       <CircularProgress size={60} />
+  //       <Typography variant="h5" sx={{ marginTop: 2 }}>
+  //         Loading product details...
+  //       </Typography>
+  //     </Container>
+  //   );
+  // }
   
   if (!product) {
     return (
@@ -337,6 +393,18 @@ useEffect(() => {
                     <Typography variant="body1">{product.dietary_fiber} g</Typography>
                   </Paper>
                 </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Paper variant="outlined" sx={{ p: 2 }}>
+                    <Typography variant="subtitle2">Sugar</Typography>
+                    <Typography variant="body1">{product.sugar} g</Typography>
+                  </Paper>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Paper variant="outlined" sx={{ p: 2 }}>
+                    <Typography variant="subtitle2">Sodium</Typography>
+                    <Typography variant="body1">{product.sodium} g</Typography>
+                  </Paper>
+                </Grid>
               </Grid>
             </Box>
           )}
@@ -350,34 +418,117 @@ useEffect(() => {
           )}
         </Box>
       </Box>
-      
-      {/* Related Products Section */}
-      <Grid container spacing={3}>
-        {relatedProducts.map((product, index) => (
-          <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
-            <ProductCard
-              name={product.product || "Unknown Product"}
-              price={product.price || 0}
-              protein={product.protein}
-              calories={product.energykcal}
-              dietary_fiber={product.fibre}
-              serving_size={product.servingsize}
-              total_carbohydrates={product.carbohydrates}
-              total_fat={product.fat}
-              image={product.image}
-              onClick={() =>
-                navigate(`/product/${encodeURIComponent(product.product)}`, {
-                  state: {
-                    name: product.product,
-                    price: product.price,
-                    image: product.image,
-                  },
-                })
-              }
-            />
+
+      <Divider sx={{ my: 4 }} />
+
+      {/* Filter Section */}
+      <Box sx={{ my: 3 }}>
+        <Typography variant="h6" gutterBottom>Select an option to tailor your recommendations:</Typography>
+        <List>
+          {options.map(option => (
+            <ListItem key={option}>
+              <FormControlLabel
+                control={
+                  <Radio
+                    checked={selectedFilter === option}
+                    onChange={handleFilterChange}
+                    value={option}
+                  />
+                }
+                label={option}
+              />
+            </ListItem>
+          ))}
+        </List>
+      </Box>
+
+      <Divider sx={{ my: 4 }} />
+            
+      {/* Related Products */}
+      {aiLoaded ? (
+        <>
+          <Typography variant="h5" gutterBottom>
+            AI Recommendations
+          </Typography>
+          <Divider sx={{ my: 4 }} />
+          <Grid container spacing={3}>
+            {aiRecs.map((product, index) => (
+              <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
+                <ProductCard
+                  name={product.product || "Unknown Product"}
+                  price={product.price || 0}
+                  protein={product.protein}
+                  calories={product.energykcal}
+                  dietary_fiber={product.fibre}
+                  serving_size={product.servingsize}
+                  total_carbohydrates={product.carbohydrates}
+                  total_fat={product.fat}
+                  sugar={product.sugar}
+                  sodium={product.salt}
+                  image={`/images/${product.image}`}
+                  onClick={() => switchProductsWhenLoaded(product)}
+                />
+              </Grid>
+            ))}
           </Grid>
-        ))}
-      </Grid>
+        </>
+      ) : (
+        <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: 300 }}>
+          <CircularProgress size={60} />
+          <Typography sx={{ marginTop: 2 }}>Loading AI recommendations...</Typography>
+        </Box>
+      )}
+      <Divider sx={{ my: 4 }} />
+
+      {/* Related Recommendations */}
+      {relatedLoaded ? (
+        <>
+          <Typography variant="h5" gutterBottom>
+            Tailored Recommendations by {selectedFilter === 'nns' ? 'NNS' : selectedFilter === 'sugar' ? 'Low Sugar' : selectedFilter === 'calories' ? 'Low Calories' : selectedFilter === 'saturated fat' ? 'Low Saturated Fat' : selectedFilter === 'sodium' ? 'Low Sodium' : selectedFilter === 'ultraprocessed' ? 'Non-Ultraprocessed' : ''}
+          </Typography>
+          <Divider sx={{ my: 4 }} />
+          <Grid container spacing={3}>
+            {relatedProducts.map((product, index) => (
+              <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
+                <ProductCard
+                  name={product.product || "Unknown Product"}
+                  price={product.price || 0}
+                  protein={product.protein}
+                  calories={product.energykcal}
+                  dietary_fiber={product.fibre}
+                  serving_size={product.servingsize}
+                  total_carbohydrates={product.carbohydrates}
+                  total_fat={product.fat}
+                  sugar={product.sugar}
+                  sodium={product.salt}
+                  image={`/images/${product.image}`}
+                  onClick={() => switchProductsWhenLoaded(product)}
+                />
+              </Grid>
+            ))}
+          </Grid>
+        </>
+      ) : (
+        <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: 300 }}>
+          <CircularProgress size={60} />
+          <Typography sx={{ marginTop: 2 }}>Loading tailored recommendations...</Typography>
+        </Box>
+      )}
+
+      {/* Dialog for waiting until recommendations are fully loaded */}
+      <Dialog open={openDialog} onClose={handleCloseDialog}>
+        <DialogTitle>Wait for recommendations to load</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Please wait while we load the recommendations for this product. Once the data is ready, you can proceed.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog} color="primary">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 }

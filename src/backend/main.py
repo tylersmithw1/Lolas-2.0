@@ -88,7 +88,8 @@ async def get_recommendations(query: Recommendation, rec_service: Recommendation
         "saturated fat": "saturatedfat per 100",
         "sodium": "salt per 100",
         "ultraprocessed": "ultra_processed_flag",
-        "nns": "nns_flag"}
+        "nns": "nns_flag"
+        }
 
         if column_name not in column_map:
             raise HTTPException(status_code=400, detail=f"Invalid column name: {column_name}")
@@ -117,8 +118,9 @@ async def get_recommendations(query: Recommendation, rec_service: Recommendation
 @app.post("/ai-recommendations")
 async def get_ai_recommendations(query: ProductName, rec_service: RecommendationService = Depends()):
     try:
+        print(f"product name: {query.full_product_name}")
         response = rec_service.getRecommendationResponse(query.full_product_name)
-       #logger.info(f"Chatbot raw response: {response}")
+        #logger.info(f"Chatbot raw response: {response}")
         print(f"Chatbot raw response: {response}")
         
     

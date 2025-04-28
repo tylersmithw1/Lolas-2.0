@@ -208,7 +208,7 @@ function ProductDetail() {
         state: {
           name: product.product,
           price: product.price,
-          image: product.image,
+          image: `/images/${product.image}`,
           protein: product.protein,
           calories: product.energykcal,
           dietary_fiber: product.fibre,

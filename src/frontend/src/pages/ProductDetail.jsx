@@ -21,7 +21,12 @@ import {
   TextField,
   IconButton,
   Radio,
-  FormControlLabel
+  FormControlLabel,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle
 } from '@mui/material';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import AddIcon from '@mui/icons-material/Add';
@@ -43,6 +48,7 @@ function ProductDetail() {
   const [relatedLoaded, setRelatedLoaded] = useState(false);
   const [aiLoaded, setAiLoaded] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState("sugar"); // defaults to low sugar rec
+  const [openDialog, setOpenDialog] = useState(false);
 
   const options = ["sugar", "calories", "saturated fat", "sodium", "ultraprocessed", "nns"];
 
@@ -65,6 +71,7 @@ function ProductDetail() {
   
         setRelatedProducts(data.products);
         setRelatedLoaded(data.products.length > 0);
+        setLoading(false);
   
       } catch (error) {
         console.error("Error fetching related products:", error);
@@ -92,6 +99,7 @@ function ProductDetail() {
   
         setAIRecs(data.products);
         setAiLoaded(data.products.length > 0);
+        setLoading(false);
   
       } catch (error) {
         console.error("Error fetching ai recommendations:", error);
@@ -105,13 +113,16 @@ function ProductDetail() {
   
 
   useEffect(() => {
+    setLoading(true);
+    setRelatedLoaded(false);
+    setAiLoaded(false);
+
     // If product data was passed via navigation state, use it
     if (location.state) {
       console.log(location.state)
       setProduct({
         ...location.state,
       });
-      setLoading(false);
     } else {
       // Fetch product details from API
       const fetchProductDetails = async () => {
@@ -172,14 +183,40 @@ function ProductDetail() {
   const handleFilterChange = (event) => {
     setSelectedFilter(event.target.value);
   };
+
+  const handleOpenDialog = () => {
+    setOpenDialog(true);
+  };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+  };
+
+  const switchProductsWhenLoaded = (product) => {
+    if (!relatedLoaded || !aiLoaded) {
+      handleOpenDialog();
+    } else {
+      navigate(`/product/${encodeURIComponent(product.product)}`, {
+        state: {
+          name: product.product,
+          price: product.price,
+          image: product.image,
+        },
+      });
+    }
+  };
   
-  if (loading) {
-    return (
-      <Container sx={{ py: 8, textAlign: 'center' }}>
-        <Typography variant="h5">Loading product details...</Typography>
-      </Container>
-    );
-  }
+  
+  // if (loading) {
+  //   return (
+  //     <Container sx={{ py: 8, textAlign: 'center' }}>
+  //       <CircularProgress size={60} />
+  //       <Typography variant="h5" sx={{ marginTop: 2 }}>
+  //         Loading product details...
+  //       </Typography>
+  //     </Container>
+  //   );
+  // }
   
   if (!product) {
     return (
@@ -406,82 +443,92 @@ function ProductDetail() {
       </Box>
 
       <Divider sx={{ my: 4 }} />
-      
-      {/* AI - Related Products Section */}
-      {aiLoaded && relatedLoaded ? (
+            
+      {/* Related Products */}
+      {aiLoaded ? (
         <>
-        <Typography variant="h5" gutterBottom>
-          AI Recommendations
-        </Typography>
-        <Divider sx={{ my: 4 }} />
-        <Grid container spacing={3}>
-          {aiRecs.map((product, index) => (
-            <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
-              <ProductCard
-                name={product.product || "Unknown Product"}
-                price={product.price || 0}
-                protein={product.protein}
-                calories={product.energykcal}
-                dietary_fiber={product.fibre}
-                serving_size={product.servingsize}
-                total_carbohydrates={product.carbohydrates}
-                total_fat={product.fat}
-                sugar={product.sugar}
-                sodium={product.salt}
-                image={`/images/${product.image}`}
-                onClick={() =>
-                  navigate(`/product/${encodeURIComponent(product.product)}`, {
-                    state: {
-                      name: product.product,
-                      price: product.price,
-                      image: product.image,
-                    },
-                  })
-                }
-              />
-            </Grid>
-          ))}
-        </Grid>
-
-        <Divider sx={{ my: 4 }} />
-
-        
-        {/* Manual - Related Products Section */}
-        <Typography variant="h5" gutterBottom>
-          Tailored Recommendations by {selectedFilter == 'nns' ? 'NNS' : selectedFilter == 'sugar' ? 'Low Sugar' : selectedFilter == 'calories' ? 'Low Calories' : selectedFilter == 'saturated fat' ? 'Low Saturated Fat' : selectedFilter == 'sodium' ? 'Low Sodium' : selectedFilter == 'ultraprocessed' ? 'Non-Ultraprocessed' : ''}
-        </Typography>
-        <Divider sx={{ my: 4 }} />
-        <Grid container spacing={3}>
-          {relatedProducts.map((product, index) => (
-            <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
-              <ProductCard
-                name={product.product || "Unknown Product"}
-                price={product.price || 0}
-                protein={product.protein}
-                calories={product.energykcal}
-                dietary_fiber={product.fibre}
-                serving_size={product.servingsize}
-                total_carbohydrates={product.carbohydrates}
-                total_fat={product.fat}
-                sugar={product.sugar}
-                sodium={product.salt}
-                image={`/images/${product.image}`}
-                onClick={() =>
-                  navigate(`/product/${encodeURIComponent(product.product)}`, {
-                    state: {
-                      name: product.product,
-                      price: product.price,
-                      image: product.image,
-                    },
-                  })
-                }
-              />
-            </Grid>
-          ))}
-        </Grid>
+          <Typography variant="h5" gutterBottom>
+            AI Recommendations
+          </Typography>
+          <Divider sx={{ my: 4 }} />
+          <Grid container spacing={3}>
+            {aiRecs.map((product, index) => (
+              <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
+                <ProductCard
+                  name={product.product || "Unknown Product"}
+                  price={product.price || 0}
+                  protein={product.protein}
+                  calories={product.energykcal}
+                  dietary_fiber={product.fibre}
+                  serving_size={product.servingsize}
+                  total_carbohydrates={product.carbohydrates}
+                  total_fat={product.fat}
+                  sugar={product.sugar}
+                  sodium={product.salt}
+                  image={`/images/${product.image}`}
+                  onClick={() => switchProductsWhenLoaded(product)}
+                />
+              </Grid>
+            ))}
+          </Grid>
         </>
-      ) : (<Typography variant="body1">Loading recommendations...</Typography>)
-    }
+      ) : (
+        <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: 300 }}>
+          <CircularProgress size={60} />
+          <Typography sx={{ marginTop: 2 }}>Loading AI recommendations...</Typography>
+        </Box>
+      )}
+      <Divider sx={{ my: 4 }} />
+
+      {/* Related Recommendations */}
+      {relatedLoaded ? (
+        <>
+          <Typography variant="h5" gutterBottom>
+            Tailored Recommendations by {selectedFilter === 'nns' ? 'NNS' : selectedFilter === 'sugar' ? 'Low Sugar' : selectedFilter === 'calories' ? 'Low Calories' : selectedFilter === 'saturated fat' ? 'Low Saturated Fat' : selectedFilter === 'sodium' ? 'Low Sodium' : selectedFilter === 'ultraprocessed' ? 'Non-Ultraprocessed' : ''}
+          </Typography>
+          <Divider sx={{ my: 4 }} />
+          <Grid container spacing={3}>
+            {relatedProducts.map((product, index) => (
+              <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
+                <ProductCard
+                  name={product.product || "Unknown Product"}
+                  price={product.price || 0}
+                  protein={product.protein}
+                  calories={product.energykcal}
+                  dietary_fiber={product.fibre}
+                  serving_size={product.servingsize}
+                  total_carbohydrates={product.carbohydrates}
+                  total_fat={product.fat}
+                  sugar={product.sugar}
+                  sodium={product.salt}
+                  image={`/images/${product.image}`}
+                  onClick={() => switchProductsWhenLoaded(product)}
+                />
+              </Grid>
+            ))}
+          </Grid>
+        </>
+      ) : (
+        <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: 300 }}>
+          <CircularProgress size={60} />
+          <Typography sx={{ marginTop: 2 }}>Loading tailored recommendations...</Typography>
+        </Box>
+      )}
+
+      {/* Dialog for waiting until recommendations are fully loaded */}
+      <Dialog open={openDialog} onClose={handleCloseDialog}>
+        <DialogTitle>Wait for recommendations to load</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Please wait while we load the recommendations for this product. Once the data is ready, you can proceed.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog} color="primary">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 }

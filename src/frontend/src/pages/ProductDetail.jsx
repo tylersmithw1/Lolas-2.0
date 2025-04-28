@@ -462,47 +462,6 @@ function ProductDetail() {
       </Box>
 
       <Divider sx={{ my: 4 }} />
-            
-      {/* AI Recommendations */}
-      {aiLoaded ? (
-        <>
-          <Typography variant="h5" gutterBottom>
-            AI Recommendations
-          </Typography>
-          <Divider sx={{ my: 4 }} />
-          {noAIProducts ? (
-            <Typography>No AI recommendations available for this product.</Typography>
-          ) : (
-            <Grid container spacing={3}>
-              {aiRecs.map((product, index) => (
-                <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
-                  <ProductCard
-                    name={product.product || "Unknown Product"}
-                    price={product.price || 0}
-                    protein={product.protein}
-                    calories={product.energykcal}
-                    dietary_fiber={product.fibre}
-                    serving_size={product.servingsize}
-                    total_carbohydrates={product.carbohydrates}
-                    total_fat={product.fat}
-                    sugar={product.sugar}
-                    sodium={product.salt}
-                    image={`/images/${product.image}`}
-                    onClick={() => switchProductsWhenLoaded(product)}
-                  />
-                </Grid>
-              ))}
-            </Grid>
-          )}
-        </>
-      ) : (
-        <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: 300 }}>
-          <CircularProgress size={60} />
-          <Typography sx={{ marginTop: 2 }}>Loading AI recommendations...</Typography>
-        </Box>
-      )}
-
-      <Divider sx={{ my: 4 }} />
 
       {/* Related Recommendations */}
       {relatedLoaded ? (
@@ -543,7 +502,47 @@ function ProductDetail() {
         </Box>
       )}
 
+      <Divider sx={{ my: 4 }} />
 
+      {/* AI Recommendations */}
+      {aiLoaded ? (
+        <>
+          <Typography variant="h5" gutterBottom>
+            AI Recommendations
+          </Typography>
+          <Divider sx={{ my: 4 }} />
+          {noAIProducts ? (
+            <Typography>No AI recommendations available for this product.</Typography>
+          ) : (
+            <Grid container spacing={3}>
+              {aiRecs.map((product, index) => (
+                <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
+                  <ProductCard
+                    name={product.product || "Unknown Product"}
+                    price={product.price || 0}
+                    protein={product.protein}
+                    calories={product.energykcal}
+                    dietary_fiber={product.fibre}
+                    serving_size={product.servingsize}
+                    total_carbohydrates={product.carbohydrates}
+                    total_fat={product.fat}
+                    sugar={product.sugar}
+                    sodium={product.salt}
+                    image={`/images/${product.image}`}
+                    onClick={() => switchProductsWhenLoaded(product)}
+                  />
+                </Grid>
+              ))}
+            </Grid>
+          )}
+        </>
+      ) : (
+        <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: 300 }}>
+          <CircularProgress size={60} />
+          <Typography sx={{ marginTop: 2 }}>Loading AI recommendations...</Typography>
+        </Box>
+      )}
+      
       {/* Dialog for waiting until recommendations are fully loaded */}
       <Dialog open={openDialog} onClose={handleCloseDialog}>
         <DialogTitle>Wait for recommendations to load</DialogTitle>

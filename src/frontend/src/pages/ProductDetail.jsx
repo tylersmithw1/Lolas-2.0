@@ -49,6 +49,8 @@ function ProductDetail() {
   const [aiLoaded, setAiLoaded] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState("sugar"); // defaults to low sugar rec
   const [openDialog, setOpenDialog] = useState(false);
+  const [noRelatedProducts, setNoRelatedProducts] = useState(false);
+  const [noAIProducts, setNoAIProducts] = useState(false);
 
   const options = ["sugar", "calories", "saturated fat", "sodium", "ultraprocessed", "nns"];
 
@@ -70,11 +72,14 @@ function ProductDetail() {
         console.log(data);
   
         setRelatedProducts(data.products);
-        setRelatedLoaded(data.products.length > 0);
+        setRelatedLoaded(true);
+        setNoRelatedProducts(data.products.length === 0);
         setLoading(false);
   
       } catch (error) {
         console.error("Error fetching related products:", error);
+        setRelatedLoaded(true);
+        setNoRelatedProducts(true);
       }
     };
   
@@ -98,11 +103,14 @@ function ProductDetail() {
         const data = await response.json();
   
         setAIRecs(data.products);
-        setAiLoaded(data.products.length > 0);
+        setAiLoaded(true);
+        setNoAIProducts(data.products.length === 0);
         setLoading(false);
   
       } catch (error) {
         console.error("Error fetching ai recommendations:", error);
+        setAiLoaded(true);
+        setNoAIProducts(true);
       }
     };
   
@@ -201,6 +209,14 @@ function ProductDetail() {
           name: product.product,
           price: product.price,
           image: product.image,
+          protein: product.protein,
+          calories: product.energykcal,
+          dietary_fiber: product.fibre,
+          serving_size: product.servingsize,
+          total_carbohydrates: product.carbohydrates,
+          total_fat: product.fat,
+          sugar: product.sugar,
+          sodium: product.salt,
         },
       });
       setTimeout(() => {
@@ -209,7 +225,7 @@ function ProductDetail() {
     }
   };
   
-  
+  // this was for when the page was loading but it doesn't really take long so i don't think we'd need this
   // if (loading) {
   //   return (
   //     <Container sx={{ py: 8, textAlign: 'center' }}>
@@ -447,33 +463,37 @@ function ProductDetail() {
 
       <Divider sx={{ my: 4 }} />
             
-      {/* Related Products */}
+      {/* AI Recommendations */}
       {aiLoaded ? (
         <>
           <Typography variant="h5" gutterBottom>
             AI Recommendations
           </Typography>
           <Divider sx={{ my: 4 }} />
-          <Grid container spacing={3}>
-            {aiRecs.map((product, index) => (
-              <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
-                <ProductCard
-                  name={product.product || "Unknown Product"}
-                  price={product.price || 0}
-                  protein={product.protein}
-                  calories={product.energykcal}
-                  dietary_fiber={product.fibre}
-                  serving_size={product.servingsize}
-                  total_carbohydrates={product.carbohydrates}
-                  total_fat={product.fat}
-                  sugar={product.sugar}
-                  sodium={product.salt}
-                  image={`/images/${product.image}`}
-                  onClick={() => switchProductsWhenLoaded(product)}
-                />
-              </Grid>
-            ))}
-          </Grid>
+          {noAIProducts ? (
+            <Typography>No AI recommendations available for this product.</Typography>
+          ) : (
+            <Grid container spacing={3}>
+              {aiRecs.map((product, index) => (
+                <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
+                  <ProductCard
+                    name={product.product || "Unknown Product"}
+                    price={product.price || 0}
+                    protein={product.protein}
+                    calories={product.energykcal}
+                    dietary_fiber={product.fibre}
+                    serving_size={product.servingsize}
+                    total_carbohydrates={product.carbohydrates}
+                    total_fat={product.fat}
+                    sugar={product.sugar}
+                    sodium={product.salt}
+                    image={`/images/${product.image}`}
+                    onClick={() => switchProductsWhenLoaded(product)}
+                  />
+                </Grid>
+              ))}
+            </Grid>
+          )}
         </>
       ) : (
         <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: 300 }}>
@@ -481,6 +501,7 @@ function ProductDetail() {
           <Typography sx={{ marginTop: 2 }}>Loading AI recommendations...</Typography>
         </Box>
       )}
+
       <Divider sx={{ my: 4 }} />
 
       {/* Related Recommendations */}
@@ -490,26 +511,30 @@ function ProductDetail() {
             Tailored Recommendations by {selectedFilter === 'nns' ? 'NNS' : selectedFilter === 'sugar' ? 'Low Sugar' : selectedFilter === 'calories' ? 'Low Calories' : selectedFilter === 'saturated fat' ? 'Low Saturated Fat' : selectedFilter === 'sodium' ? 'Low Sodium' : selectedFilter === 'ultraprocessed' ? 'Non-Ultraprocessed' : ''}
           </Typography>
           <Divider sx={{ my: 4 }} />
-          <Grid container spacing={3}>
-            {relatedProducts.map((product, index) => (
-              <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
-                <ProductCard
-                  name={product.product || "Unknown Product"}
-                  price={product.price || 0}
-                  protein={product.protein}
-                  calories={product.energykcal}
-                  dietary_fiber={product.fibre}
-                  serving_size={product.servingsize}
-                  total_carbohydrates={product.carbohydrates}
-                  total_fat={product.fat}
-                  sugar={product.sugar}
-                  sodium={product.salt}
-                  image={`/images/${product.image}`}
-                  onClick={() => switchProductsWhenLoaded(product)}
-                />
-              </Grid>
-            ))}
-          </Grid>
+          {noRelatedProducts ? (
+            <Typography>No tailored recommendations available for this product.</Typography>
+          ) : (
+            <Grid container spacing={3}>
+              {relatedProducts.map((product, index) => (
+                <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
+                  <ProductCard
+                    name={product.product || "Unknown Product"}
+                    price={product.price || 0}
+                    protein={product.protein}
+                    calories={product.energykcal}
+                    dietary_fiber={product.fibre}
+                    serving_size={product.servingsize}
+                    total_carbohydrates={product.carbohydrates}
+                    total_fat={product.fat}
+                    sugar={product.sugar}
+                    sodium={product.salt}
+                    image={`/images/${product.image}`}
+                    onClick={() => switchProductsWhenLoaded(product)}
+                  />
+                </Grid>
+              ))}
+            </Grid>
+          )}
         </>
       ) : (
         <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: 300 }}>
@@ -517,6 +542,7 @@ function ProductDetail() {
           <Typography sx={{ marginTop: 2 }}>Loading tailored recommendations...</Typography>
         </Box>
       )}
+
 
       {/* Dialog for waiting until recommendations are fully loaded */}
       <Dialog open={openDialog} onClose={handleCloseDialog}>

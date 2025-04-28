@@ -203,6 +203,9 @@ function ProductDetail() {
           image: product.image,
         },
       });
+      setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }, 0);
     }
   };
   
@@ -520,7 +523,7 @@ function ProductDetail() {
         <DialogTitle>Wait for recommendations to load</DialogTitle>
         <DialogContent>
           <Typography>
-            Please wait while we load the recommendations for this product. Once the data is ready, you can proceed.
+            Please wait while we load the recommendations for this product. Once they are loaded you may proceed.
           </Typography>
         </DialogContent>
         <DialogActions>

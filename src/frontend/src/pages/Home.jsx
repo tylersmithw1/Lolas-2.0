@@ -23,8 +23,8 @@ import {
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import FilterListIcon from '@mui/icons-material/FilterList';
-
 import ProductCard from "../components/ProductCard";
+import { useNavigate } from "react-router-dom";
 
 function Home() {
   const [products, setProducts] = useState([]);
@@ -40,6 +40,8 @@ function Home() {
   });
   const [noProductFound, setNoProductFound] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  const navigate = useNavigate();
 
   const categories = [
     { name: "Fruits & Vegetables", image: "/images/categories/fruits-vegetables.jpg" },
@@ -192,9 +194,9 @@ function Home() {
       {/* Main Content */}
       <Container maxWidth="lg" sx={{ mt: 4 }}>
         {isLoading ? (
-          // Loading spinner
-          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
             <CircularProgress size={200} />
+            <Typography sx={{ marginTop: 2 }}>Finding your healthiest options for '{searchQuery}'</Typography>
           </Box>
         ) : noProductFound ? (
           <Box textAlign="center" mt={8}>
@@ -240,6 +242,26 @@ function Home() {
                     total_fat={product.fat}
                     sugar={product.sugar}
                     sodium={product.salt}
+                    onClick={() => {
+                      navigate(`/product/${encodeURIComponent(product.product || "Unknown Product")}`, {
+                        state: {
+                          name: product.product || "Unknown Product",
+                          price: product.price || 0,
+                          image: `/images/${product.image}`,
+                          serving_size: product.servingsize,
+                          calories: product.energykcal,
+                          protein: product.protein,
+                          total_fat: product.fat,
+                          total_carbohydrates: product.carbohydrates,
+                          dietary_fiber: product.fibre,
+                          sugar: product.sugar,
+                          sodium: product.salt,
+                        },
+                      });
+                      setTimeout(() => {
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }, 0);
+                    }}
                   />
                 </Grid>
               ))}

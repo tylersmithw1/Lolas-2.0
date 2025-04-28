@@ -43,8 +43,8 @@ logger = logging.getLogger(__name__)
 BASE_DIR = os.path.dirname(
     os.path.abspath(__file__)
 )  
-file_path = os.path.join(BASE_DIR, "cleaned_data_3.xlsx")  #Full path to the Excel file
-df = pd.read_excel(file_path)
+file_path = os.path.join(BASE_DIR, "cleaned_data_4.xlsx")  #Full path to the Excel file
+CLEANED_DF = pd.read_excel(file_path)
 
 
 @app.post("/grocery")
@@ -58,7 +58,7 @@ async def create_ranking(query: GrocerySearch, chat_service: chatService = Depen
         ranked_names = response.get("ranking", [])
         print(f"ranked names: {ranked_names}")
         # Match and return full product details from your Excel df
-        matched = df[df["product"].isin(ranked_names)]
+        matched = CLEANED_DF[CLEANED_DF["product"].isin(ranked_names)]
         print(f"matched products: {matched}")
 
         # Keep the original ranking order
@@ -99,7 +99,7 @@ async def get_recommendations(query: Recommendation, rec_service: Recommendation
         response = rec_service.recomendations_by_column(product_name, column_name)
 
         ranked_names = response.get("ranking", [])
-        matched = df[df["product"].isin(ranked_names)]
+        matched = CLEANED_DF[CLEANED_DF["product"].isin(ranked_names)]
 
         # Keep the original ranking order
         ranked_detailed = []
@@ -127,7 +127,7 @@ async def get_ai_recommendations(query: ProductName, rec_service: Recommendation
         ranked_names = response.get("ranking", [])
         print(f"ranked names: {ranked_names}")
         # Match and return full product details from your Excel df
-        matched = df[df["product"].isin(ranked_names)]
+        matched = CLEANED_DF[CLEANED_DF["product"].isin(ranked_names)]
         print(f"matched products: {matched}")
 
         # Keep the original ranking order

@@ -26,7 +26,7 @@ class RecommendationService:
     def __init__(self):
         pass
 
-    def get_closest_product_name(self, product_name, df, threshold=80):
+    def get_closest_product_name(self, product_name, df, threshold=50):
         product_list = df["product"].tolist()
         match, score, idx = process.extractOne(
             product_name, product_list, scorer=fuzz.token_sort_ratio

@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import SearchBar from '/Users/dikamanne/Lolas-2.0-1/src/frontend/src/components/SearchBar.jsx'; // Adjust path as needed
+import SearchBar from '../../components/SearchBar'; // Adjust path as needed
+
 import React from 'react'; // Make sure React is imported
 
 describe('SearchBar', () => {

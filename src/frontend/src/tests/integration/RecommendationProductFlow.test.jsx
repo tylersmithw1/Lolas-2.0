@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
-import ProductDetail from "/Users/dikamanne/Lolas-2.0-1/src/frontend/src/pages/ProductDetail.jsx";
+import ProductDetail from '../../pages/ProductDetail'
 import { describe, it, vi, expect } from "vitest";
 
 

@@ -1,6 +1,7 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
-import Home from "/Users/dikamanne/Lolas-2.0-1/src/frontend/src/pages/Home.jsx";
+import Home from '../../pages/Home'
+
 import { describe, it, vi, expect } from "vitest";
 
 describe("Home page integration", () => {

@@ -1,6 +1,8 @@
 import { Card, CardActionArea, CardContent, CardMedia, Typography, Box, IconButton } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 
+// there is no functionality for the cart button
+
 function ProductCard({ name, price, image, healthRating, serving_size, calories, protein, total_fat, total_carbohydrates, dietary_fiber, sugar, sodium, onClick }) {
 
   const renderHealthRating = () => {

@@ -144,7 +144,8 @@ function Home() {
         </Toolbar>
       </AppBar>
 
-      {/* Filter Drawer */}
+      {/* Filter Drawer  - no current functionality, just displayed*/}
+      
       <Drawer
         anchor="right"
         open={isFilterOpen}

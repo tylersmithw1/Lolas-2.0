@@ -164,7 +164,7 @@ def test_get_closest_product_match_found(recommender_service, recs_mock_df):
 def test_get_closest_product_match_not_found(recommender_service, recs_mock_df):
     """test for no close match found"""
     with patch("services.recommendation_service.process.extractOne") as mock_extract:
-        mock_extract.return_value = ("Simulated", 60, 0) #returns value below threshold, so should return None
+        mock_extract.return_value = ("Simulated", 40, 0) #returns value below threshold, so should return None
         result = recommender_service.get_closest_product_name("xyz", recs_mock_df)
         assert result is None
 

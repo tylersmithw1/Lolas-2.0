@@ -4,7 +4,6 @@ function SearchBar({ onSearch }) {
   const [query, setQuery] = useState("");
 
   const handleSearch = () => {
-    
     if (!query.trim()) return;
     onSearch(query);
   };
@@ -18,7 +17,10 @@ function SearchBar({ onSearch }) {
         onChange={(e) => setQuery(e.target.value)}
         style={{ padding: "10px", width: "300px" }}
       />
-      <button onClick={handleSearch} style={{ marginLeft: "10px", padding: "10px" }}>
+      <button
+        onClick={handleSearch}
+        style={{ marginLeft: "10px", padding: "10px" }}
+      >
         Search
       </button>
     </div>

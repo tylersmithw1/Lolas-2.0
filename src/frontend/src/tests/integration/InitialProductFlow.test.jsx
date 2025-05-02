@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
-import Home from '../../pages/Home'
+import Home from "../../pages/Home";
 
 import { describe, it, vi, expect } from "vitest";
 
@@ -31,7 +31,7 @@ describe("Home page integration", () => {
     render(
       <MemoryRouter>
         <Home />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     // Simulate search
@@ -40,9 +40,9 @@ describe("Home page integration", () => {
     });
 
     // Get all buttons and find the submit button (type="submit")
-    const buttons = screen.getAllByRole('button');
-    const submitButton = buttons.find((btn) => btn.type === 'submit');
-    fireEvent.click(submitButton);  // Click the search submit button
+    const buttons = screen.getAllByRole("button");
+    const submitButton = buttons.find((btn) => btn.type === "submit");
+    fireEvent.click(submitButton); // Click the search submit button
 
     // Wait for product to appear
     await waitFor(() => {
@@ -52,7 +52,5 @@ describe("Home page integration", () => {
     // Click the card (via image alt text)
     const image = screen.getByAltText("Banana");
     fireEvent.click(image);
-
-    
   });
 });

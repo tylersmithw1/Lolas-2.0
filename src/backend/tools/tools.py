@@ -1,4 +1,5 @@
 "These are tools that we 'give' to the AI agents to use in chat_service and recommendation_service."
+
 from langchain_core.tools import tool
 import pandas as pd
 from fuzzywuzzy import fuzz
@@ -7,7 +8,7 @@ import os
 import json
 
 
-#--starts here---this is for dropping columns and creating a new excel file with only the columns the chat service ai agent needs to use
+# --starts here---this is for dropping columns and creating a new excel file with only the columns the chat service ai agent needs to use
 # BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # file_path = os.path.join(BASE_DIR, "cleaned_data_4.xlsx")
 # df = pd.read_excel(file_path)
@@ -44,23 +45,23 @@ import json
 #         inplace=True,
 #     )
 # df.to_excel("ai_products_clean.xlsx", index=False)
-#---ends here---
+# ---ends here---
 
-BASE_DIR = os.path.dirname(
-    os.path.abspath(__file__)
-)  
-file_path = os.path.join(BASE_DIR, "ai_products_clean.xlsx")  # Full path to the ai Excel file
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+file_path = os.path.join(
+    BASE_DIR, "ai_products_clean.xlsx"
+)  # Full path to the ai Excel file
 chat_service_df = pd.read_excel(file_path)
 
 
-@tool #this decorator is how langchain 'injects' the tools into the AI agent. This tool is used in the chat_service.py file
+@tool  # this decorator is how langchain 'injects' the tools into the AI agent. This tool is used in the chat_service.py file
 def initial_data_search(query, df=chat_service_df, threshold=95):
-    """Use this tool to retrieve the immediate food data relating to the user's search term.""" #need to add a docstring to the function so the AI agent knows what it does
+    """Use this tool to retrieve the immediate food data relating to the user's search term."""  # need to add a docstring to the function so the AI agent knows what it does
 
     for column in df.select_dtypes(include=["object"]).columns:
         df[column] = df[column].fillna("").astype(str)
 
-    #columns_to_search = ["aisle", "shelf", "product", "department"]
+    # columns_to_search = ["aisle", "shelf", "product", "department"]
     columns_to_search = ["product"]
 
     # Create an empty list to hold the rows that match the query
@@ -89,7 +90,7 @@ def initial_data_search(query, df=chat_service_df, threshold=95):
     filtered_df = pd.DataFrame(matching_rows)
 
     if filtered_df.empty:
-        return json.dumps([]) ## Return an empty JSON array if no matches found
+        return json.dumps([])  ## Return an empty JSON array if no matches found
 
     # return filtered_df
     if not filtered_df.empty:
@@ -108,9 +109,9 @@ def initial_data_search(query, df=chat_service_df, threshold=95):
 # #print(initial_data_search.invoke("Ice Mountain Brand 100% Natural Spring Water, 16.9-Ounce Bottles (Pack Of 32)"))
 
 ##--starts here---this is for dropping columns and creating a new excel file with only the columns the recommendation ai agent needs to use
-# BASE_DIR = os.path.dirname(os.path.abspath(__file__))  
+# BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 # file_path2 = os.path.join(BASE_DIR, "with_price.xlsx")  #with price is an excel sheet that has all the cleaning PLUS the price per serving column added to it
-#it's deleted in this repo, but to find how its made or recreate it, if you go to clean_dataset.py, uncomment 'dc.price_per_container()'
+# it's deleted in this repo, but to find how its made or recreate it, if you go to clean_dataset.py, uncomment 'dc.price_per_container()'
 # df2 = pd.read_excel(file_path2)
 
 # df2.drop(
@@ -152,15 +153,16 @@ def initial_data_search(query, df=chat_service_df, threshold=95):
 # df2.to_excel("recs_ai_products.xlsx", index=False)  #for reference, recs_ai_products.xlsx is the same excel as recommendation_products.xlsx in the services folder
 
 
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))  
-file_path2 = os.path.join(BASE_DIR, "recs_ai_products.xlsx")  # Full path to the recs_ai Excel file
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+file_path2 = os.path.join(
+    BASE_DIR, "recs_ai_products.xlsx"
+)  # Full path to the recs_ai Excel file
 recs_service_df = pd.read_excel(file_path2)
 
 
-@tool #this decorator is how langchain 'injects' the tools into the AI agent. This tool is used in the recommendation_service.py file
+@tool  # this decorator is how langchain 'injects' the tools into the AI agent. This tool is used in the recommendation_service.py file
 def get_similar_shelf_products(product_name, df=recs_service_df, threshold=50):
-    """Use this tool to retrieve similar products from the same shelf.""" #need to add a docstring to the function so the AI agent knows what it does
+    """Use this tool to retrieve similar products from the same shelf."""  # need to add a docstring to the function so the AI agent knows what it does
 
     # Step 1: Fuzzy match to get closest product name
     product_list = df["product"].tolist()
@@ -183,7 +185,7 @@ def get_similar_shelf_products(product_name, df=recs_service_df, threshold=50):
 
     if filtered_df.empty:
         return json.dumps([])  # Return an empty JSON array if no matches found
-    
+
     # return filtered_df
     if not filtered_df.empty:
         result_json = filtered_df.to_dict(orient="records")  # List of dictionaries
@@ -193,4 +195,3 @@ def get_similar_shelf_products(product_name, df=recs_service_df, threshold=50):
             print(f"Serialization error: {e}")
             print(f"Problematic row: {matching_rows[0]}")
         return json_str
-    

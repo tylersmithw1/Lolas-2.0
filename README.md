@@ -12,6 +12,7 @@ depending on where they deploy. Navigate to the project repository's
 README.md to see more information about the project and setup. Local
 Setup is also included below.
 
+Link to [Project Board](https://github.com/users/tylersmithw1/projects/1)
 **Local Setup Instructions:**
 
 1.  In order to run the project, you must first get the proper access

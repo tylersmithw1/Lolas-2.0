@@ -1,4 +1,5 @@
 "api endpoints for lola's 2.0"
+
 # import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -15,14 +16,14 @@ from services.recommendation_service import RecommendationService
 
 app = FastAPI()
 
-origins = ["http://localhost:8000",  # React default port
+origins = [
+    "http://localhost:8000",  # React default port
     "http://127.0.0.1:8000",
     "http://localhost:5173",  # Vite default port
-    "http://127.0.0.1:5173", 
-    "http://localhost:5174", 
-    "http://127.0.0.1:5174"
-    
-    ]
+    "http://127.0.0.1:5173",
+    "http://localhost:5174",
+    "http://127.0.0.1:5174",
+]
 
 app.add_middleware(
     CORSMiddleware,
@@ -36,10 +37,8 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-BASE_DIR = os.path.dirname(
-    os.path.abspath(__file__)
-)  
-file_path = os.path.join(BASE_DIR, "cleaned_data_4.xlsx")  #Full path to the Excel file
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+file_path = os.path.join(BASE_DIR, "cleaned_data_4.xlsx")  # Full path to the Excel file
 CLEANED_DF = pd.read_excel(file_path)
 
 
@@ -48,10 +47,9 @@ async def create_ranking(query: GrocerySearch, chat_service: chatService = Depen
     """Endpoint to get AI product ranking based on user query."""
     try:
         response = chat_service.getChatResponse(query.search_string)
-       #logger.info(f"Chatbot raw response: {response}")
+        # logger.info(f"Chatbot raw response: {response}")
         print(f"Chatbot raw response: {response}")
-        
-    
+
         ranked_names = response.get("ranking", [])
         print(f"ranked names: {ranked_names}")
         # Match and return full product details from your Excel df
@@ -72,7 +70,9 @@ async def create_ranking(query: GrocerySearch, chat_service: chatService = Depen
 
 
 @app.post("/recommendations")
-async def get_recommendations(query: Recommendation, rec_service: RecommendationService = Depends()):
+async def get_recommendations(
+    query: Recommendation, rec_service: RecommendationService = Depends()
+):
     """Endpoint to get product recommendations based on a specific column. This is the manual recommendation endpoint."""
     try:
         product_name = query.product_name
@@ -81,19 +81,21 @@ async def get_recommendations(query: Recommendation, rec_service: Recommendation
         print(f"column name: {column_name}")
 
         column_map = {
-        "sugar": "sugar per 100",
-        "calories": "energykcal per 100",
-        "saturated fat": "saturatedfat per 100",
-        "sodium": "salt per 100",
-        "ultraprocessed": "ultra_processed_flag",
-        "nns": "nns_flag"
+            "sugar": "sugar per 100",
+            "calories": "energykcal per 100",
+            "saturated fat": "saturatedfat per 100",
+            "sodium": "salt per 100",
+            "ultraprocessed": "ultra_processed_flag",
+            "nns": "nns_flag",
         }
 
         if column_name not in column_map:
-            raise HTTPException(status_code=400, detail=f"Invalid column name: {column_name}")
+            raise HTTPException(
+                status_code=400, detail=f"Invalid column name: {column_name}"
+            )
 
         column_name = column_map[column_name]
-        
+
         response = rec_service.recomendations_by_column(product_name, column_name)
 
         ranked_names = response.get("ranking", [])
@@ -114,15 +116,16 @@ async def get_recommendations(query: Recommendation, rec_service: Recommendation
 
 
 @app.post("/ai-recommendations")
-async def get_ai_recommendations(query: ProductName, rec_service: RecommendationService = Depends()):
+async def get_ai_recommendations(
+    query: ProductName, rec_service: RecommendationService = Depends()
+):
     """Endpoint to get AI product recommendations based on user query."""
     try:
         print(f"product name: {query.full_product_name}")
         response = rec_service.getRecommendationResponse(query.full_product_name)
-        #logger.info(f"Chatbot raw response: {response}")
+        # logger.info(f"Chatbot raw response: {response}")
         print(f"Chatbot raw response: {response}")
-        
-    
+
         ranked_names = response.get("ranking", [])
         print(f"ranked names: {ranked_names}")
         # Match and return full product details from your Excel df

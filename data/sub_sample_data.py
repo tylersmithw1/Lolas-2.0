@@ -1,62 +1,62 @@
 """Script to sub sample data."""
 
-from data_cleaner import DataCleaner 
+from data_cleaner import DataCleaner
 
 dc: DataCleaner = DataCleaner("products.xlsx")
 
-dc.drop('updated')
+dc.drop("updated")
 
-dc.sub_sample_rows('department', 30)
+dc.sub_sample_rows("department", 30)
 
-#convert units in columns
-dc.convert_m_to_grams('fat')
-dc.convert_m_to_grams('transfat')
-dc.convert_m_to_grams('saturatedfat')
-dc.convert_m_to_grams('carbohydrates')
-dc.convert_m_to_grams('sugar')
-dc.convert_m_to_grams('salt')
-dc.convert_m_to_grams('fibre')
-dc.convert_m_to_grams('protein')
-
-
-#standardising 'energykcal' column
-dc.remove_text('energykcal', 'cal')
-dc.strip_spaces('energykcal')
-dc.to_float('energykcal')
-
-#remove text from servings per container column
-dc.remove_text('servingspercontainer', 'About')
-dc.strip_spaces('servingspercontainer')
-dc.remove_text('servingspercontainer', 'ABOUT')
-dc.strip_spaces('servingspercontainer')
-dc.remove_text('servingspercontainer', 'servings')
-dc.strip_spaces('servingspercontainer')
+# convert units in columns
+dc.convert_m_to_grams("fat")
+dc.convert_m_to_grams("transfat")
+dc.convert_m_to_grams("saturatedfat")
+dc.convert_m_to_grams("carbohydrates")
+dc.convert_m_to_grams("sugar")
+dc.convert_m_to_grams("salt")
+dc.convert_m_to_grams("fibre")
+dc.convert_m_to_grams("protein")
 
 
-#standardising 'servingsize' column
-dc.convert_oz_to_ml('servingsize')
-dc.strip_spaces('servingsize')
-dc.extract_bracketed_value('servingsize')
-dc.strip_spaces('servingsize')
-dc.convert_package_based_size('servingsize')
-dc.convert_cups_to_ml('servingsize')
-dc.strip_spaces('servingsize')
-dc.convert_tbsp_to_ml('servingsize')
-dc.strip_spaces('servingsize')
+# standardising 'energykcal' column
+dc.remove_text("energykcal", "cal")
+dc.strip_spaces("energykcal")
+dc.to_float("energykcal")
+
+# remove text from servings per container column
+dc.remove_text("servingspercontainer", "About")
+dc.strip_spaces("servingspercontainer")
+dc.remove_text("servingspercontainer", "ABOUT")
+dc.strip_spaces("servingspercontainer")
+dc.remove_text("servingspercontainer", "servings")
+dc.strip_spaces("servingspercontainer")
+
+
+# standardising 'servingsize' column
+dc.convert_oz_to_ml("servingsize")
+dc.strip_spaces("servingsize")
+dc.extract_bracketed_value("servingsize")
+dc.strip_spaces("servingsize")
+dc.convert_package_based_size("servingsize")
+dc.convert_cups_to_ml("servingsize")
+dc.strip_spaces("servingsize")
+dc.convert_tbsp_to_ml("servingsize")
+dc.strip_spaces("servingsize")
 
 
 # standardise columns to per 100g or 100ml
-dc.standardize_column('energykcal')
-dc.standardize_column('fat')
-dc.standardize_column('saturatedfat')
-dc.standardize_column('transfat')
-dc.standardize_column('carbohydrates')
-dc.standardize_column('sugar')
-dc.standardize_column('salt')
-dc.standardize_column('fibre')
-dc.standardize_column('protein')
+dc.standardize_column("energykcal")
+dc.standardize_column("fat")
+dc.standardize_column("saturatedfat")
+dc.standardize_column("transfat")
+dc.standardize_column("carbohydrates")
+dc.standardize_column("sugar")
+dc.standardize_column("salt")
+dc.standardize_column("fibre")
+dc.standardize_column("protein")
 
-#flag UPF
+# flag UPF
 ultraprocessed_ingredients = [
     "AGAVE",
     "FRUCTOSE",
@@ -327,134 +327,138 @@ ultraprocessed_ingredients = [
     "FLAVOR",
     "SWEETENER",
 ]
-dc.flag_ultra_processed("ingredients",ultraprocessed_ingredients)
+dc.flag_ultra_processed("ingredients", ultraprocessed_ingredients)
 
-#high sugar
+# high sugar
 high_sugar_ingredients = [
-    "AGAVE", 
-"FRUCTOSE",
-"NULOMOLINE",
-"BARLEY MALT SYRUP",
-"GALACTOSE",
-"ORGANIC BARLEY MALT SYRUP",
-"CANE JUICE",
-"GLUCOSE",
-"PALATINOSE",
-"CANEJUICE",
-"GOMME",
-"PANELA",
-"CANE SWEETENER",
-"HONEY",
-"PILONCILLO",
-"CLINTOSE",
-"HONI-BAKE",
-"SACCHAROSE",
-"COCONUT NECTAR",
-"HONI BAKE",
-"SORBOSE",
-"COCONUT BLOSSOM NECTAR", 
-"HONIBAKE",
-"SUCANAT",
-"COCONUT SAP",
-"HONI-FLAKE",
-"SUCROSE",
-"CORNSWEET",
-"HONI FLAKE",
-"SUCROVERT",
-"CORN SWEET",
-"HONIFLAKE",
-"SUGAR",
-"CORN SWEETENER",
-"ISOGLUCOSE",
-"SUGARS",
-"CORNSWEETENER",
-"ISOMALTULOSE",
-"SWEET’N’NEAT",
-"DEMERARA",
-"JAGGERY",
-"SWEETNNEAT",
-"DEXTROSE",
-"KONA-AME",
-"SWEETN NEAT",
-"DISACCHARIDE",
-"KONA AME",
-"SWEET NNEAT",
-"DISACCHARIDES",
-"KONAAME",
-"SWEET N NEAT",
-"DRI-MOL",
-"LACTOSE",
-"SYRUP",
-"DRI MOL",
-"MALTOSE",
-"TAGATOSE",
-"DRIMOL",
-"MIZU-AME",
-"TREACLE",
-"DRI-SWEET",
-"MIZU AME",
-"TREHALOSE",
-"DRI SWEET",
-"MIZUAME",
-"TRUSWEET",
-"DRISWEET",
-"MOLASSES",
-"TRU SWEET",
-"FLO-MALT",
-"MONOSACCHARIDE",
-"TURBINADO",
-"FLO MALT",
-"MONOSACCHARIDES",
-"VERSATOSE",
-"FLOMALT",
-"MUSCOVADO",
-"YACON",
-"MALT"]
-dc.flag_high_sugar("ingredients", 'sugar', 'aisle', high_sugar_ingredients)
+    "AGAVE",
+    "FRUCTOSE",
+    "NULOMOLINE",
+    "BARLEY MALT SYRUP",
+    "GALACTOSE",
+    "ORGANIC BARLEY MALT SYRUP",
+    "CANE JUICE",
+    "GLUCOSE",
+    "PALATINOSE",
+    "CANEJUICE",
+    "GOMME",
+    "PANELA",
+    "CANE SWEETENER",
+    "HONEY",
+    "PILONCILLO",
+    "CLINTOSE",
+    "HONI-BAKE",
+    "SACCHAROSE",
+    "COCONUT NECTAR",
+    "HONI BAKE",
+    "SORBOSE",
+    "COCONUT BLOSSOM NECTAR",
+    "HONIBAKE",
+    "SUCANAT",
+    "COCONUT SAP",
+    "HONI-FLAKE",
+    "SUCROSE",
+    "CORNSWEET",
+    "HONI FLAKE",
+    "SUCROVERT",
+    "CORN SWEET",
+    "HONIFLAKE",
+    "SUGAR",
+    "CORN SWEETENER",
+    "ISOGLUCOSE",
+    "SUGARS",
+    "CORNSWEETENER",
+    "ISOMALTULOSE",
+    "SWEET’N’NEAT",
+    "DEMERARA",
+    "JAGGERY",
+    "SWEETNNEAT",
+    "DEXTROSE",
+    "KONA-AME",
+    "SWEETN NEAT",
+    "DISACCHARIDE",
+    "KONA AME",
+    "SWEET NNEAT",
+    "DISACCHARIDES",
+    "KONAAME",
+    "SWEET N NEAT",
+    "DRI-MOL",
+    "LACTOSE",
+    "SYRUP",
+    "DRI MOL",
+    "MALTOSE",
+    "TAGATOSE",
+    "DRIMOL",
+    "MIZU-AME",
+    "TREACLE",
+    "DRI-SWEET",
+    "MIZU AME",
+    "TREHALOSE",
+    "DRI SWEET",
+    "MIZUAME",
+    "TRUSWEET",
+    "DRISWEET",
+    "MOLASSES",
+    "TRU SWEET",
+    "FLO-MALT",
+    "MONOSACCHARIDE",
+    "TURBINADO",
+    "FLO MALT",
+    "MONOSACCHARIDES",
+    "VERSATOSE",
+    "FLOMALT",
+    "MUSCOVADO",
+    "YACON",
+    "MALT",
+]
+dc.flag_high_sugar("ingredients", "sugar", "aisle", high_sugar_ingredients)
 
 
-#high sodium
+# high sodium
 high_sodium_ingredients = [
     "BIOSALT",
-"BRINE",
-"PRAGUE POWDER",
-"SALT",
-"SLAT",
-"SODIUM CHLORIDE"]
-    
-dc.flag_high_sodium('ingredients', 'salt','aisle', high_sodium_ingredients )
+    "BRINE",
+    "PRAGUE POWDER",
+    "SALT",
+    "SLAT",
+    "SODIUM CHLORIDE",
+]
 
-#high saturated fat
+dc.flag_high_sodium("ingredients", "salt", "aisle", high_sodium_ingredients)
+
+# high saturated fat
 high_saturated_fat_ingredients = [
     "ANIMAL FAT",
-"LAMB FAT",
-"BEEF FAT",
-"LARD",
-"BUTTER",
-"OIL",
-"CHICKEN FAT",
-"OILS",
-"DRIPPING",
-"PALM FAT",
-"DUCK FAT",
-"PASTRY FAT",
-"FATS",
-"PORK FAT",
-"FATTY ACIDS",
-"SHORTENING",
-"FATTY MATERIAL",
-"STEARIC ACID",
-"GHEE",
-"TALLOW",
-"MARGARINE",
-"VEGETABLE FAT",
-"MEDIUM CHAIN TRIGLYCERIDES",
+    "LAMB FAT",
+    "BEEF FAT",
+    "LARD",
+    "BUTTER",
+    "OIL",
+    "CHICKEN FAT",
+    "OILS",
+    "DRIPPING",
+    "PALM FAT",
+    "DUCK FAT",
+    "PASTRY FAT",
+    "FATS",
+    "PORK FAT",
+    "FATTY ACIDS",
+    "SHORTENING",
+    "FATTY MATERIAL",
+    "STEARIC ACID",
+    "GHEE",
+    "TALLOW",
+    "MARGARINE",
+    "VEGETABLE FAT",
+    "MEDIUM CHAIN TRIGLYCERIDES",
 ]
-dc.flag_high_saturated_fat('ingredients', 'saturatedfat', 'aisle', high_saturated_fat_ingredients)
+dc.flag_high_saturated_fat(
+    "ingredients", "saturatedfat", "aisle", high_saturated_fat_ingredients
+)
 
 
-#high calorie
-dc.flag_high_calories('energykcal', 'aisle')
+# high calorie
+dc.flag_high_calories("energykcal", "aisle")
 
-#save file
-dc.save_data('sub-products.xlsx')
+# save file
+dc.save_data("sub-products.xlsx")

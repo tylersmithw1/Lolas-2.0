@@ -1,4 +1,5 @@
 """Model for a product name and column name; used in /recommendations."""
+
 from pydantic import BaseModel
 
 

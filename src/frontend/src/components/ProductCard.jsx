@@ -1,21 +1,42 @@
-import { Card, CardActionArea, CardContent, CardMedia, Typography, Box, IconButton } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
+import {
+  Card,
+  CardActionArea,
+  CardContent,
+  CardMedia,
+  Typography,
+  Box,
+  IconButton,
+} from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
 
 // there is no functionality for the cart button
 
-function ProductCard({ name, price, image, healthRating, serving_size, calories, protein, total_fat, total_carbohydrates, dietary_fiber, sugar, sodium, onClick }) {
-
+function ProductCard({
+  name,
+  price,
+  image,
+  healthRating,
+  serving_size,
+  calories,
+  protein,
+  total_fat,
+  total_carbohydrates,
+  dietary_fiber,
+  sugar,
+  sodium,
+  onClick,
+}) {
   const renderHealthRating = () => {
     return (
-      <Box sx={{ display: 'flex', mb: 1 }}>
+      <Box sx={{ display: "flex", mb: 1 }}>
         {[...Array(5)].map((_, index) => (
           <Box
             key={index}
             sx={{
               width: 12,
               height: 12,
-              borderRadius: '50%',
-              backgroundColor: '#ccc',
+              borderRadius: "50%",
+              backgroundColor: "#ccc",
               marginRight: 0.5,
             }}
           />
@@ -25,31 +46,67 @@ function ProductCard({ name, price, image, healthRating, serving_size, calories,
   };
 
   return (
-    <Card sx={{ width: 220, height: 300, borderRadius: 2, overflow: 'hidden', boxShadow: 2, position: 'relative' }}>
+    <Card
+      sx={{
+        width: 220,
+        height: 300,
+        borderRadius: 2,
+        overflow: "hidden",
+        boxShadow: 2,
+        position: "relative",
+      }}
+    >
       <CardActionArea
-        sx={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}
+        sx={{ display: "flex", flexDirection: "column", alignItems: "stretch" }}
         onClick={onClick}
       >
         <CardMedia
           component="img"
           image={image}
           alt={name}
-          sx={{ width: '100%', height: 170, objectFit: 'cover', backgroundColor: '#f5f5f5' }}
+          sx={{
+            width: "100%",
+            height: 170,
+            objectFit: "cover",
+            backgroundColor: "#f5f5f5",
+          }}
         />
-        <CardContent sx={{ padding: 1, flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
-          <Typography gutterBottom variant="body2" sx={{ fontWeight: 'bold', fontSize: 14 }}>
+        <CardContent
+          sx={{
+            padding: 1,
+            flexGrow: 1,
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          <Typography
+            gutterBottom
+            variant="body2"
+            sx={{ fontWeight: "bold", fontSize: 14 }}
+          >
             {name}
           </Typography>
           {renderHealthRating()}
-          <Typography variant="body2" color="text.secondary" sx={{ marginBottom: 1 }}>
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ marginBottom: 1 }}
+          >
             ${price ? price.toFixed(2) : "0.00"}
           </Typography>
         </CardContent>
       </CardActionArea>
-      
+
       <IconButton
-        sx={{ position: 'absolute', bottom: 8, right: 8, backgroundColor: '#4CAF50', color: 'white', '&:hover': { backgroundColor: '#45a049' } }}
-        onClick={() => navigate('/cart')}
+        sx={{
+          position: "absolute",
+          bottom: 8,
+          right: 8,
+          backgroundColor: "#4CAF50",
+          color: "white",
+          "&:hover": { backgroundColor: "#45a049" },
+        }}
+        onClick={() => navigate("/cart")}
       >
         <AddIcon />
       </IconButton>

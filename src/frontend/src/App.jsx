@@ -10,9 +10,7 @@ function App() {
         <Route path="/product/:id" element={<ProductDetail />} />
       </Routes>
     </Router>
-
   );
-  
 }
 
 export default App;

@@ -4,13 +4,11 @@ import pandas as pd
 from fastapi.testclient import TestClient
 from unittest.mock import MagicMock
 from main import app
-#from ...src.backend.main import app
 from services.chat_service import chatService
 from services.recommendation_service import RecommendationService
-#from ...src.backend.service import chatService
+
+
 client: TestClient = TestClient(app)
-
-
 #tests for the /grocery endpoint
 # mock response from chat service when searching 'orange juice'
 chat_mock_response = {

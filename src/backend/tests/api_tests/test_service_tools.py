@@ -1,4 +1,4 @@
-"Test for the service layer"
+"Test for the service layers of the application, including the chat service and recommendation service."
 import pytest
 from services.chat_service import chatService
 from services.recommendation_service import RecommendationService

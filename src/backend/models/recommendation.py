@@ -1,4 +1,4 @@
-"""Model for a grocery search term."""
+"""Model for a product name and column name; used in /recommendations."""
 from pydantic import BaseModel
 
 

@@ -1,4 +1,4 @@
-"""Model for a grocery search term."""
+"""Model for a grocery search term. Used in /grocery"""
 from pydantic import BaseModel
 
 

@@ -1,0 +1,19 @@
+Name                                                         Stmts   Miss  Cover
+--------------------------------------------------------------------------------
+data/__init__.py                                                 0      0   100%
+data/data_cleaner.py                                           309    123    60%
+src/backend/main.py                                             79      0   100%
+src/backend/models/grocery_search.py                             3      0   100%
+src/backend/models/product_name.py                               3      0   100%
+src/backend/models/recommendation.py                             4      0   100%
+src/backend/services/chat_service.py                            37      0   100%
+src/backend/services/recommendation_service.py                  60      2    97%
+src/backend/tests/__init__.py                                    0      0   100%
+src/backend/tests/api_tests/__init__.py                          0      0   100%
+src/backend/tests/api_tests/test_api.py                        144      0   100%
+src/backend/tests/api_tests/test_service_tools.py              122      0   100%
+src/backend/tests/data cleaning tests/__init__.py                0      0   100%
+src/backend/tests/data cleaning tests/test_data_cleaner.py     224      0   100%
+src/backend/tools/tools.py                                      60     22    63%
+--------------------------------------------------------------------------------
+TOTAL                                                         1045    147    86%

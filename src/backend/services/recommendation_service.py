@@ -1,4 +1,5 @@
-"""Recommendation Service Layer."""
+"""Service methods to support api for lola's 2.0. This handles both the manual recommendations (by health attribute column) and the AI recommendations (which combines all the different health attribute columns) """
+
 
 import os
 import pandas as pd
@@ -6,13 +7,10 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from rapidfuzz import fuzz, process
 from tools.tools import get_similar_shelf_products
-from langchain_community.chat_models import BedrockChat
-from langchain_aws import ChatBedrockConverse
 from langgraph.prebuilt import create_react_agent
 from langchain_core.messages import SystemMessage
 from services.chat_service import chatService
-import re
-import ast
+
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))  
@@ -26,7 +24,8 @@ class RecommendationService:
     def __init__(self):
         pass
 
-    def get_closest_product_name(self, product_name, df, threshold=80):
+    def get_closest_product_name(self, product_name, df, threshold=50):
+        """Get the closest product name from the DataFrame using fuzzy matching."""
         product_list = df["product"].tolist()
         match, score, idx = process.extractOne(
             product_name, product_list, scorer=fuzz.token_sort_ratio
@@ -36,6 +35,7 @@ class RecommendationService:
         return None
 
     def recomendations_by_column(self, product_name, column_name):
+        """Get recommendations based on a specific column. This is the method that will be called by the /recommendations API."""
         closest_name = self.get_closest_product_name(product_name, REC_DF)
         if not closest_name:
             print(f"No close match found for product '{product_name}'.")
@@ -87,6 +87,7 @@ class RecommendationService:
         return {'ranking': sorted_result["product"].to_list()[:4]}
 
     
+    #use an instance of chatService here because the AI response uses the same algorithms as chatService. So there's no need to repeat the code
     CHAT_SERVICE = chatService()
 
     PROMPT = SystemMessage(
@@ -119,10 +120,11 @@ class RecommendationService:
         )
 
 
-    TOOLS = [get_similar_shelf_products]
+    TOOLS = [get_similar_shelf_products] #This is how we give the AI agent 'tools' to use
 
 
     def getRecommendationResponse(self, product_name):
+        """Get AI recommendations based on the product name. This is the method that will be called by the /ai-recommendations API."""
         chat = self.CHAT_SERVICE.getBedrockChat()
         agent = create_react_agent(chat, self.TOOLS, state_modifier=self.PROMPT)
         config = {"recursion_limit": self.CHAT_SERVICE.RECURSION_LIMIT, "timeout": 20*60}
@@ -131,10 +133,6 @@ class RecommendationService:
         ai_output = messages["messages"][-1].content
         print(f"AI Output: {ai_output}")
         json_output = self.CHAT_SERVICE.extract_json(ai_output)
-        #return ai_output
-        #return output
         return json_output
 
-# some = RecommendationService()
-# print(some.recomendations_by_column("Real Good Pepperoni Pizza Snack Bites, 8.5 Oz Box, 8 Count", "energykcal per 100"))
 

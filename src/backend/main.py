@@ -1,14 +1,10 @@
-"api endpoint for lola's 2.0"
+"api endpoints for lola's 2.0"
 # import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from typing import List
-#from src.backend.services.chat_service import chatService
 from services.chat_service import chatService
 from fastapi import FastAPI, HTTPException, Depends
 import os
-from fastapi.responses import JSONResponse
 import pandas as pd
 import logging
 from models.grocery_search import GrocerySearch
@@ -49,6 +45,7 @@ CLEANED_DF = pd.read_excel(file_path)
 
 @app.post("/grocery")
 async def create_ranking(query: GrocerySearch, chat_service: chatService = Depends()):
+    """Endpoint to get AI product ranking based on user query."""
     try:
         response = chat_service.getChatResponse(query.search_string)
        #logger.info(f"Chatbot raw response: {response}")
@@ -76,6 +73,7 @@ async def create_ranking(query: GrocerySearch, chat_service: chatService = Depen
 
 @app.post("/recommendations")
 async def get_recommendations(query: Recommendation, rec_service: RecommendationService = Depends()):
+    """Endpoint to get product recommendations based on a specific column. This is the manual recommendation endpoint."""
     try:
         product_name = query.product_name
         column_name = query.column_name
@@ -117,6 +115,7 @@ async def get_recommendations(query: Recommendation, rec_service: Recommendation
 
 @app.post("/ai-recommendations")
 async def get_ai_recommendations(query: ProductName, rec_service: RecommendationService = Depends()):
+    """Endpoint to get AI product recommendations based on user query."""
     try:
         print(f"product name: {query.full_product_name}")
         response = rec_service.getRecommendationResponse(query.full_product_name)

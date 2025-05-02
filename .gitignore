@@ -1,7 +1,10 @@
 # Created by venv; see https://docs.python.org/3/library/venv.html
 env
 .env
+.venv
 src/backend/__pycache__
+src/backend/.pytest_cache
+src/backend/tests/.pytest_cache
 src/backend/models/__pycache__
 src/backend/tests/__pycache__
 src/backend/tests/api_tests/__pycache__

@@ -1,4 +1,4 @@
-"""Model for a product name; used for ai recs."""
+"""Model for a product name; used in /ai-recommendations"""
 from pydantic import BaseModel
 
 

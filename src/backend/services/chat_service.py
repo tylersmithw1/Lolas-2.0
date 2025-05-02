@@ -1,10 +1,8 @@
-"Service methods to support api for lola's 2.0. This handles the chatbot ranking response."
+"Service methods to support api for lola's 2.0. This handles the AI ranking response for when a user initially searches for a product."
 import dotenv
-from langchain_community.chat_models import BedrockChat
 from langchain_aws import ChatBedrockConverse
 from langgraph.prebuilt import create_react_agent
 from langchain_core.messages import SystemMessage
-#from src.backend.tools.tools import *
 from tools.tools import initial_data_search
 import ast
 import re
@@ -67,19 +65,17 @@ class chatService:
 
 
 
-    TOOLS = [initial_data_search]
+    TOOLS = [initial_data_search] #This is how we give the AI agent 'tools' to use
 
     def extract_json(self, response_text):
-    # Step 1: Extract string between <json> and </json>
+        """Method to extract JSON-like string from the response text. Used to parse the AI response."""
         match = re.search(r"<json>\s*(.*?)\s*</json>", response_text, re.DOTALL)
 
         if match:
             json_like_string = match.group(1)
-
-            # Step 2: Convert string to dictionary safely
             try:
                 data = ast.literal_eval(json_like_string)
-                return data  # Return the parsed dictionary
+                return data  
             except Exception as e:
                 print("Error parsing JSON:", e)
                 return None
@@ -90,6 +86,7 @@ class chatService:
 
 
     def getChatResponse(self, user_input):
+        """Method to get the chat response from the AI model. This is the method that will be called by the /grocery API."""
         chat = self.getBedrockChat()
         agent = create_react_agent(chat, self.TOOLS, state_modifier=self.PROMPT)
         config = {"recursion_limit": self.RECURSION_LIMIT, "timeout": 20*60}
@@ -98,8 +95,6 @@ class chatService:
         ai_output = messages["messages"][-1].content
         print(f"AI Output: {ai_output}")
         json_output = self.extract_json(ai_output)
-        #return ai_output
-        #return output
         return json_output
 
 

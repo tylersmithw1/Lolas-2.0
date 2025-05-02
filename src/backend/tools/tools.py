@@ -1,4 +1,4 @@
-"tool for ai agent to search for food data in a pandas dataframe using fuzzy matching"
+"These are tools that we 'give' to the AI agents to use in chat_service and recommendation_service."
 from langchain_core.tools import tool
 import pandas as pd
 from fuzzywuzzy import fuzz
@@ -53,9 +53,9 @@ file_path = os.path.join(BASE_DIR, "ai_products_clean.xlsx")  # Full path to the
 chat_service_df = pd.read_excel(file_path)
 
 
-@tool
+@tool #this decorator is how langchain 'injects' the tools into the AI agent. This tool is used in the chat_service.py file
 def initial_data_search(query, df=chat_service_df, threshold=95):
-    """Use this tool to retrieve the immediate food data relating to the user's search term."""
+    """Use this tool to retrieve the immediate food data relating to the user's search term.""" #need to add a docstring to the function so the AI agent knows what it does
 
     for column in df.select_dtypes(include=["object"]).columns:
         df[column] = df[column].fillna("").astype(str)
@@ -149,7 +149,7 @@ def initial_data_search(query, df=chat_service_df, threshold=95):
 #         axis=1,
 #         inplace=True,
 #     )
-# df2.to_excel("recs_ai_products.xlsx", index=False)
+# df2.to_excel("recs_ai_products.xlsx", index=False)  #for reference, recs_ai_products.xlsx is the same excel as recommendation_products.xlsx in the services folder
 
 
 
@@ -158,9 +158,9 @@ file_path2 = os.path.join(BASE_DIR, "recs_ai_products.xlsx")  # Full path to the
 recs_service_df = pd.read_excel(file_path2)
 
 
-@tool
+@tool #this decorator is how langchain 'injects' the tools into the AI agent. This tool is used in the recommendation_service.py file
 def get_similar_shelf_products(product_name, df=recs_service_df, threshold=50):
-    """Use this tool to retrieve similar products from the same shelf."""
+    """Use this tool to retrieve similar products from the same shelf.""" #need to add a docstring to the function so the AI agent knows what it does
 
     # Step 1: Fuzzy match to get closest product name
     product_list = df["product"].tolist()
@@ -194,4 +194,3 @@ def get_similar_shelf_products(product_name, df=recs_service_df, threshold=50):
             print(f"Problematic row: {matching_rows[0]}")
         return json_str
     
-# #print(get_similar_shelf_products.invoke(("Real Good Pepperoni Pizza Snack Bites, 8.5 Oz Box, 8 Count")))
